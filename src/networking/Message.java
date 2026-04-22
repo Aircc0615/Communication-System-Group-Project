@@ -41,7 +41,7 @@ public class Message implements Serializable { //serialize takes the object and 
         return status;
     }
 
-    public String getText(){
+    public String getText() {
         return text;
     }
 
