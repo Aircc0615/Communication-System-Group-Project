@@ -55,6 +55,8 @@ public class Chat {
 
 	//removes the member from the chat
 	public void removeMember(int memberId) {
+		if(memberId == chatCreatorId)
+			throw new IllegalArgumentException();
 		int indexInArray = 0;
 		while(indexInArray < numMembers) { //attempts to find the member
 			if(memberIds[indexInArray] == memberId) {
@@ -74,13 +76,13 @@ public class Chat {
 
 	//getters
 	public TextMessage getMessage(int messageIndex) {
-		if(messageIndex >= numMessages)
-			throw new IllegalArgumentException();
+		if(messageIndex >= numMessages || messageIndex < 0)
+			throw new IndexOutOfBoundsException();
 		return messages[messageIndex];
 	}
 	public int getMemberId(int memberIndex) {
-		if(memberIndex >= numMembers)
-			throw new IllegalArgumentException();
+		if(memberIndex >= numMembers || memberIndex < 0)
+			throw new IndexOutOfBoundsException();
 		return memberIds[memberIndex];
 	}
 	public int getCreatorId() {

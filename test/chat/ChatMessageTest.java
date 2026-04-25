@@ -12,10 +12,10 @@ import src.chat.Chat;
 class ChatMessageTest{
 	private static int[] memberIds = {1, 2, 3, 4, 5, 6};
 	private static int creatorId = 1;
-	private static Chat chat;
+	private Chat chat;
 
 	@BeforeEach
-	static void initializeTestConditions() {
+	void initializeTestConditions() {
 		chat = new Chat(creatorId, memberIds, ChatType.GROUP);
 	}
 
@@ -80,13 +80,13 @@ class ChatMessageTest{
 	@Test
 	void chatMessageInvalidMessageIndex() {
 		chat.addMessage(new TextMessage("test text", "user1", creatorId));
-		assertThrows(IllegalArgumentException.class, 
+		assertThrows(IndexOutOfBoundsException.class, 
 				() -> chat.getMessage(1));
 	}
 
 	@Test
-	void chatMessageNegataiveMessageIndex() {
-		assertThrows(IllegalArgumentException.class, 
+	void chatMessageNegativeMessageIndex() {
+		assertThrows(IndexOutOfBoundsException.class, 
 				() -> chat.getMessage(-1));
 	}
 }

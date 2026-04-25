@@ -59,4 +59,16 @@ class ChatConstructorTest {
 						() -> {chat.getMemberId(memberIds.length);});
 	}
 
+	@Test
+	void constructorToString() {
+		String toStr = "";
+		for(int i = 0; i < memberIds.length; i++) {
+			if(i != 0)
+				toStr += ',';
+			toStr += memberIds[i];
+		}
+		toStr += ("\nGROUP\n" + chat.getNewestUpdate() + '\n' + creatorId);
+		assertEquals(chat.toString(), toStr);
+	}
+
 }
