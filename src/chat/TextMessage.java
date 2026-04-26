@@ -1,4 +1,4 @@
-package src.chat;
+package chat;
 import java.time.Instant;
 
 public class TextMessage {
@@ -6,21 +6,25 @@ public class TextMessage {
 	private String username;
 	private int userId;
 	private Instant timestamp;
-	public TextMessage(String text, String username, int userId, Instant timestamp) {
+	
+	public TextMessage(String text, String username, int userId) {
 		this.text = text;
 		this.username = username;
 		this.userId = userId;
-		this.timestamp = timestamp;
 	}
+	
 	public String getText() {
 		return text;
 	}
+	
 	public String getUsername() {
 		return username;
 	}
+	
 	public int getUserId() {
 		return userId;
 	}
+	
 	public Instant getTimestamp() {
 		return timestamp;
 	}
