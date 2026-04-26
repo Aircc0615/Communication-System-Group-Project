@@ -1,14 +1,9 @@
-package test.chat;
+package chat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import src.chat.TextMessage;
-import src.chat.ChatType;
-import src.chat.Chat;
-import src.chat.ChatList;
 
 class ChatListTest {
 	private ChatList chatList;

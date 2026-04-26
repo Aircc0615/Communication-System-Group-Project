@@ -43,6 +43,8 @@ public class Chat {
 	}
 	
 	public TextMessage getMessage(int messageIndex) {
+		if(messageIndex >= numMessages || messageIndex < 0)
+			throw new IndexOutOfBoundsException();
 		return messages[messageIndex];
 	}
 	
@@ -61,6 +63,8 @@ public class Chat {
 	}
 	
 	public int getMemberId(int memberIndex) {
+		if(memberIndex >= numMembers || memberIndex < 0)
+			throw new IndexOutOfBoundsException();
 		return memberIds[memberIndex];
 	}
 	
@@ -87,16 +91,6 @@ public class Chat {
 	}
 
 	//getters
-	public TextMessage getMessage(int messageIndex) {
-		if(messageIndex >= numMessages || messageIndex < 0)
-			throw new IndexOutOfBoundsException();
-		return messages[messageIndex];
-	}
-	public int getMemberId(int memberIndex) {
-		if(memberIndex >= numMembers || memberIndex < 0)
-			throw new IndexOutOfBoundsException();
-		return memberIds[memberIndex];
-	}
 	
 	public int getCreatorId() {
 		return chatCreatorId;

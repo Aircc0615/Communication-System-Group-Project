@@ -1,13 +1,9 @@
-package test.chat;
+package chat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import src.chat.TextMessage;
-import src.chat.ChatType;
-import src.chat.Chat;
 
 class ChatMessageTest{
 	private static int[] memberIds = {1, 2, 3, 4, 5, 6};
