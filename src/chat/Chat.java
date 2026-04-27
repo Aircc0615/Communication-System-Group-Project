@@ -6,10 +6,10 @@ public class Chat {
 	private int numMessages;
 	private int[] memberIds;
 	private int numMembers;
-	private ChatType chatType;
-	private int chatCreatorId;
+	private final ChatType chatType;
+	private final int chatCreatorId;
 	private static int count = 1;
-	private int chatId;
+	private final int chatId;
 	private Instant newestUpdate;
 	
 	public Chat(int creatorId, int[] memberIds, ChatType type) {

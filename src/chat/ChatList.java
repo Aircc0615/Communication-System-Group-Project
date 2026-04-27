@@ -1,6 +1,7 @@
 package chat;
 import java.time.Instant;
 
+//might need to add a semaphore for addchat/deletechat synchronization
 public class ChatList {
 	private Chat[] chats;
 	private int numChats;
@@ -13,7 +14,7 @@ public class ChatList {
 	
 
 	//inserts a chat in the array based on the order of the timestamp
-	public void addChat(Chat chat) {
+	public synchronized void addChat(Chat chat) {
 		//makes more space if needed (2x)
 		if(numChats >= chats.length) {
 			Chat[] newChats = new Chat[chats.length * 2];
@@ -22,20 +23,9 @@ public class ChatList {
 			}
 			chats = newChats;
 		}
-		//find the index based on the chat timestamp order
-		int arrayIndex;
-		for(arrayIndex = 0; arrayIndex < numChats; arrayIndex++) {
-			Chat checkChat = chats[arrayIndex];
-			if(checkChat.getNewestUpdate().compareTo(chat.getNewestUpdate()) <= 0)
-				break;
-		}
-		//shift array up
-		for(int i = numChats; i > arrayIndex; i--) {
-			chats[i] = chats[i-1];
-		}
-		//insert chat and increment num chats
-		chats[arrayIndex] = chat;
-		numChats++;
+
+		chats[numChats] = chat;
+		reorderList(numChats++);
 	}
 	
 
@@ -58,8 +48,9 @@ public class ChatList {
 	
 
 	//add message
-	public void addChatMessage(int chatIndex, TextMessage message) {
+	public synchronized void addChatMessage(int chatIndex, TextMessage message) {
 		chats[chatIndex].addMessage(message);
+		reorderList(chatIndex);
 	}
 
 	//attempt to add a member to a chat
@@ -121,5 +112,23 @@ public class ChatList {
 			retStr += chats[i].getChatId();
 		}
 		return retStr;
+	}
+
+	private synchronized void reorderList(int updatedChatIndex) {
+		if(updatedChatIndex == 0)
+			return;
+		int i;
+		for(i = 0; i < updatedChatIndex; i++) {
+			if(chats[i].getNewestUpdate()
+					.compareTo(chats[updatedChatIndex].getNewestUpdate()) <= 0)
+				break;
+		}
+		if(i == updatedChatIndex)
+			return;
+		Chat tempChat = chats[updatedChatIndex];
+		for(int j = updatedChatIndex; j > i; j--) {
+			chats[j] = chats[j - 1];
+		}
+		chats[i] = tempChat;
 	}
 }
