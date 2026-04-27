@@ -54,20 +54,11 @@ public class Client {
         }
 	}
 	
-	public static void sendMessage(User user, Socket clientSideSocket) throws IOException {
-		Message message;
-    	String text = "";
-
-        while(!clientSideSocket.isClosed()) {
-        	text = sin.nextLine(); //read in user input
-            TextMessage textMessage = new TextMessage(text, user.getUsername(), user.getId()); //let 0 represent some userID
-
-            message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, textMessage.getText(), user);
-            messageHistory.add(message); //the message the user input should be sent
-            // textMessageHistory.add(textMessage); add the text message to the text message history array | This isnt needed (likely will use this in communication system)
-            objectOutputStream.writeObject(message); //where the object gets serialized and sent
-        }
-     
+	public static void sendMessage(User user, Socket clientSideSocket, String text) throws IOException {
+		TextMessage textMessage = new TextMessage(text, user.getUsername(), user.getId()); //let 0 represent some userID
+        Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, textMessage.getText(), user);
+        messageHistory.add(message); //the message the user input should be sent
+        objectOutputStream.writeObject(message); //where the object gets serialized and sent     
 	}
 	
 	public static void listenForServerMessages(ObjectInputStream objectInputStream, Socket clientSideSocket) throws ClassNotFoundException, IOException {
@@ -100,8 +91,8 @@ public class Client {
     	Socket clientSideSocket = connectToServer();
 
         System.out.println("Enter Login!");
-		String username = "username";// sin.nextLine() user would enter login info here
-        String password = "password";
+		String username = sin.nextLine();
+        String password = sin.nextLine();;
         User user = new User(username, password);
         
         boolean authenticatedUser = login(user, objectOutputStream, clientSideSocket);
@@ -119,7 +110,11 @@ public class Client {
     		});
              
             serverListener.start();
-        	sendMessage(user, clientSideSocket);	
+            String text;
+            while(!clientSideSocket.isClosed()) {
+            	text = sin.nextLine();
+            	sendMessage(user, clientSideSocket, text);
+            }
         }
     }
 

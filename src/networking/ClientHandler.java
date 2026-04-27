@@ -13,14 +13,59 @@ public class ClientHandler implements Runnable{
     private final Socket clientSocket;
     private int userId;
     private Server server;
+    
+    ObjectInputStream objectInputStream;
+    ObjectOutputStream objectOutputStream;
 
     public ClientHandler(Socket socket, Server server){
         this.clientSocket = socket;
         this.server = server;
     }
 
-    //helper functions
-    public void successfulLogin(ObjectOutputStream objectOutputStream, List<Message> messageList) throws IOException {
+    //server driver operations
+    public void run() {
+        try {
+            System.out.println("Connection to client established from " + clientSocket.getInetAddress().getHostAddress() + "!\n");
+
+            InputStream clientInputStream = clientSocket.getInputStream(); //allows us to receive an input stream from client/whatever data is coming from the client
+            objectInputStream = new ObjectInputStream(clientInputStream); //whatever the client sent will be displayed as output on the servers console
+
+            OutputStream outputStream = clientSocket.getOutputStream();
+            objectOutputStream = new ObjectOutputStream(outputStream); //this allows us to send stuff out to the client
+
+            List<Message> messageList = new ArrayList<>();
+            Message message = (Message) objectInputStream.readObject(); //incoming message from client gets deserialized
+            messageList.add(message); //add the client message to the array of messages on the server side
+
+            if (message.mainType == MainType.AUTHENTICATION) { //if its a login
+                boolean authenticatedUser = performAuthenticationOperation(clientSocket, clientInputStream, message, messageList); //returns true if its a valid user/false if not
+
+                if (authenticatedUser) { //if they're a valid user they can go ahead and send messages
+                    while (message.subType != SubType.LOGOUT) {
+                        message = (Message) objectInputStream.readObject(); //read the incoming object
+
+                        messageList.add(message); //add the incoming messages to the array
+
+                        performMessageOperation(clientSocket, clientInputStream, message, messageList); //this would perform the appropriate operation depending on the message Main and Sub types
+                    }
+
+                    Message logoutSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGOUT, Status.SUCCESS, "Logout successful", null);
+                    messageList.add(logoutSuccess);
+                    objectOutputStream.writeObject(logoutSuccess);
+
+
+                    System.out.println("Closing Client Socket.");
+                    clientSocket.close();
+                }
+            }
+            else System.out.println("Please enter a valid username and password");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+  //helper functions
+    public void successfulLogin(List<Message> messageList) throws IOException {
         Message loginSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE , Status.SUCCESS, "Login successful", null); //create a login success message to send to the user
         objectOutputStream.writeObject(loginSuccess); //sends back the successful login message
         messageList.add(loginSuccess); //login message that is sent out from server to client gets added to the array
@@ -30,10 +75,10 @@ public class ClientHandler implements Runnable{
         System.out.println("");
     }
     
-    public boolean performAuthenticationOperation(Socket clientSocket, InputStream clientInputStream, ObjectOutputStream objectOutputStream, Message message, List<Message> messageList) throws IOException {
+    public boolean performAuthenticationOperation(Socket clientSocket, InputStream clientInputStream, Message message, List<Message> messageList) throws IOException {
         //if the login is successful we perform the next step, otherwise we send a failed response
         if(message.subType == SubType.LOGIN) {
-            successfulLogin(objectOutputStream, messageList); //this function at the moment just sends the user a successful login response message and adds the message to our message list array
+            successfulLogin(messageList); //this function at the moment just sends the user a successful login response message and adds the message to our message list array
 			return true; //if successful/this needs to be changed if false but for the current version set to true
         }
 
@@ -47,26 +92,18 @@ public class ClientHandler implements Runnable{
         return false; //same here might need to be changed
     }
     
-    public void sendText(Socket clientSocket, Message message, ObjectOutputStream objectOutputStream) throws IOException {
+    public void sendText(Socket clientSocket, Message message) throws IOException {
         System.out.println("From " + clientSocket.getInetAddress().getHostAddress() + ": " + message.getText()); //display message along with who its from
-        String toUpperMsg = message.getText().toUpperCase();
-        Message msgReceipt = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, toUpperMsg, null); //At the moment this just echoes and doesnt handle sending to other clients
-        List<Message> echoMessages = new ArrayList<>();
-        echoMessages.add(msgReceipt);
-        objectOutputStream.writeObject(echoMessages);
-    }
-    
-    public void receiveTexts(Socket clientSocket, Message message, ObjectOutputStream objectOutputStream) throws IOException {
-        System.out.println("From " + message.getUser().getUsername() + ": " + message.getText()); //display message along with who its from
-        String toUpperMsg = message.getText().toUpperCase();
-        Message msgReceipt = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, toUpperMsg, null); //At the moment this just echoes and doesnt handle sending to other clients
-        List<Message> incomingMessages = new ArrayList<>();
-        incomingMessages.add(msgReceipt);
-        objectOutputStream.writeObject(incomingMessages);
+        Message msgToSend = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, message.getText(), message.getUser()); //At the moment this just echoes and doesnt handle sending to other clients
+        
+        List<Message> messagesToSend = new ArrayList<>();
+        messagesToSend.add(msgToSend);
+        
+        server.sendToClients(messagesToSend);
     }
 
     //facade/wrapper function that calls the function corresponding to the message types
-    public void performMessageOperation(Socket clientSocket, InputStream clientInputStream, ObjectOutputStream objectOutputStream, Message message, List<Message> messageList) throws IOException { //mainType:  AUTHENTICATION, DISPLAY, TEXT, CHAT_OPERATION, AUDIT_OPERATION
+    public void performMessageOperation(Socket clientSocket, InputStream clientInputStream, Message message, List<Message> messageList) throws IOException { //mainType:  AUTHENTICATION, DISPLAY, TEXT, CHAT_OPERATION, AUDIT_OPERATION
         if (message.mainType == MainType.DISPLAY) {
             switch (message.subType){
                 case SubType.ACTUAL_CHAT:
@@ -83,7 +120,7 @@ public class ClientHandler implements Runnable{
         else if (message.mainType == MainType.TEXT){
             switch (message.subType) {
                 case SubType.SEND_TEXT_MESSAGE:
-                    sendText(clientSocket, message, objectOutputStream);
+                    sendText(clientSocket, message);
                     break;
                 default:
                     System.out.println("Message Object Constructed Incorrectly");
@@ -140,53 +177,8 @@ public class ClientHandler implements Runnable{
         }
     }
 
-
-    //server driver operations
-    public void run() {
-        try {
-            System.out.println("Connection to client established from " + clientSocket.getInetAddress().getHostAddress() + "!\n");
-
-            InputStream clientInputStream = clientSocket.getInputStream(); //allows us to receive an input stream from client/whatever data is coming from the client
-            ObjectInputStream objectInputStream = new ObjectInputStream(clientInputStream); //whatever the client sent will be displayed as output on the servers console
-
-            OutputStream outputStream = clientSocket.getOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream); //this allows us to send stuff out to the client
-
-            List<Message> messageList = new ArrayList<>();
-            Message message = (Message) objectInputStream.readObject(); //incoming message from client gets deserialized
-            messageList.add(message); //add the client message to the array of messages on the server side
-
-            if (message.mainType == MainType.AUTHENTICATION) { //if its a login
-                boolean authenticatedUser = performAuthenticationOperation(clientSocket, clientInputStream, objectOutputStream, message, messageList); //returns true if its a valid user/false if not
-
-                if (authenticatedUser) { //if theyre a valid user they can go ahead and send messages
-                    while (message.subType != SubType.LOGOUT) {
-                        message = (Message) objectInputStream.readObject();
-
-                        messageList.add(message); //add the incoming messages to the array
-
-                        performMessageOperation(clientSocket, clientInputStream, objectOutputStream, message, messageList); //this would perform the appropriate operation depending on the message Main and Sub types
-                    }
-
-                    Message logoutSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGOUT, Status.SUCCESS, "Logout successful", null);
-                    messageList.add(logoutSuccess);
-                    objectOutputStream.writeObject(logoutSuccess);
-
-                    //printing each message in messageList for each message we print id, type, status and text
-//                messageList.forEach(msg -> {
-//                    System.out.println("ID: " + msg.getId() + "\tType: " + msg.getType() + "\tStatus: " + msg.getStatus());
-//                    System.out.println("Text: " + msg.getText());
-//                    System.out.println();
-//                });
-
-                    System.out.println("Closing Client Socket.");
-
-                    clientSocket.close();
-                }
-            }
-            else System.out.println("Please enter a valid username and password");
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+    
+	public void sendToClient(List<Message> messages) throws IOException {
+		objectOutputStream.writeObject(messages);
+	}
 }

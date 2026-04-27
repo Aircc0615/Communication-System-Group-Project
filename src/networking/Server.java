@@ -33,7 +33,7 @@ public class Server {
             while (true) {
                 Socket socket = serverSocket.accept(); //blocks until a client connects
                 ClientHandler client = new ClientHandler(socket, this);
-//                currentClients.add(client);
+                currentClients.add(client);
                 (new Thread(client)).start();
             }
         } catch (Exception e) {
@@ -50,12 +50,18 @@ public class Server {
 
     }
     
+    public void sendToClients(List<Message> messages) throws IOException {
+    	for(ClientHandler client: currentClients) {
+    		client.sendToClient(messages);
+    	}
+    }
+   
     public void addUser(User user) {
     	
     }
     
 
-
+   
 
 	private void failedLoginAttempt() {
 		// TODO Auto-generated method stub

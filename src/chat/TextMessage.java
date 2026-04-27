@@ -28,4 +28,4 @@ public class TextMessage {
 	public Instant getTimestamp() {
 		return timestamp;
 	}
-}
+}	
