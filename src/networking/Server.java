@@ -79,7 +79,7 @@ public class Server {
     	return newUser;
 	}
     
-    public void sendToClients(List<Message> messages) throws IOException {
+    public void sendToEVERYClients(List<Message> messages) throws IOException {
     	for(ClientHandler client : currentClients) {
     		client.sendToClient(messages);
     	}
@@ -100,28 +100,30 @@ public class Server {
 	// MESSAGE: MainType.TEXT    
 	// SubType.SEND_TEXT_MESSAGE 
     public void handleSendText(String text, String username, int chatId) throws IOException {
-    		User user = usernameToUser.get(username);
-    		TextMessage txtMsg = new TextMessage(text, username, user.getId());
-    		try {
-    			chats.addChatMessage(chatId, txtMsg);
-    		} catch (IndexOutOfBoundsException e) {
-    			System.err.println("Invalid Chat Id of " + chatId + " detected from user: " + username);
-    			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, txtMsg, chatId);
-    			List<Message> failureMessages = new ArrayList<>();
-    			failureMessages.add(failedText);
-    			sendToClient(failureMessages, username);
-    			return;
-    		}
-    		String[] usernames = chats.getChatMembers(chatId);
-    		for(String name : usernames) {
-    			User otherUser = usernameToUser.get(name);
-    			otherUser.updateChatOrder(chatId);
+		User user = usernameToUser.get(username);
+		TextMessage txtMsg = new TextMessage(text, username, user.getId());
+		try {
+			chats.addChatMessage(chatId, txtMsg);
+		} catch (IndexOutOfBoundsException e) {
+			System.err.println("Invalid Chat Id of " + chatId + " detected from user: " + username);
+			
+			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, txtMsg, chatId);
+			List<Message> failureMessages = new ArrayList<>();
+			failureMessages.add(failedText);
+			sendToClient(failureMessages, username);
+			return;
+		}
+		String[] usernames = chats.getChatMembers(chatId);
+		
+		for(String name : usernames) {
+			User otherUser = usernameToUser.get(name);
+			otherUser.updateChatOrder(chatId);
     		}
     	
         Message msgToSend = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, txtMsg, chatId);
         List<Message> messagesToSend = new ArrayList<>();
         messagesToSend.add(msgToSend);
-        sendToClients(messagesToSend);
+        sendToClients(messagesToSend, usernames);
     }
    
 	// MESSAGE: MainType.CHAT_OPERATIONs    
@@ -155,27 +157,50 @@ public class Server {
 	
 	// SubType.ADD_USER_TO_GC
 	public void handleAddUserToChat(Message message, ClientHandler clientHandler) {
+		int chatId = message.getChatId();
+		String chatOwner = message.getUser().getUsername();
+		String userToAdd= message.getText(); //we need to make sure we store the username of who is being added in the text field
 		
-		
+		try {
+			chats.addChatMember(chatId, userToAdd, chatOwner);
+		} catch(IndexOutOfBoundsException e) {
+			
+		}
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
 	public void handleRemoveUserFromChat(Message message, ClientHandler clientHandler) {
-		// TODO Auto-generated method stub
+		int chatId = message.getChatId();
+		String chatOwner = message.getUser().getUsername();
+		String userToRemove = message.getText(); //we need to make sure we store the username of who is being removed in the text field
 		
+		try {
+		chats.removeChatMember(chatId, userToRemove, chatOwner);
+		} catch(IndexOutOfBoundsException e) {
+			
+		}
 	}
 	
 	// SubType.DELETE_GC
 	public void handleDeleteGC(Message message, ClientHandler clientHandler) {
-		// TODO Auto-generated method stub
-		
+		int chatToDelete = message.getChatId();
+		String userAttemptingToDelete = message.getUser().getUsername();
+		try {
+			chats.deleteChat(chatToDelete, userAttemptingToDelete);
+		} catch(IndexOutOfBoundsException e) {
+			
+		}
 	}
     
     // MESSAGE: MainType.AUDIT_OPERATION
     // SubType.ENTER_AUDIT_MODE
-    public void handleEnterAuditMode(Message message, ClientHandler clientHandler) {
-		// TODO Auto-generated method stub
-		
+    public boolean handleEnterAuditMode(Message message, ClientHandler clientHandler) {
+		User itUser = message.getUser();
+		boolean isIT = itUser.isInformationTechnologyUser();
+		if(isIT) {
+			return true; //temporary
+		}
+		return false;  //temporary
 	}
     
 	// SubType.SELECT_USER

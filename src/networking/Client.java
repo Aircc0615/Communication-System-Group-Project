@@ -16,7 +16,7 @@ public class Client {
 	static OutputStream outputStream = null;
 	static ObjectOutputStream objectOutputStream = null;
 	static Socket clientSideSocket = null;
-	static List<Message> messageHistory = new ArrayList<>();
+	static List<Message> messageHistory = new ArrayList<>(); //client side message history
 	static Scanner sin = new Scanner(System.in);
 	private static User user;
 	
@@ -101,6 +101,14 @@ public class Client {
         }
 	}
 
+	//helper functions
+	public static void sendToServer(Message message) throws IOException{
+		objectOutputStream.writeObject(message);
+	}
+	
+	public static void updateMessageHistory(Message message) {
+		messageHistory.add(message);
+	}
 	
     // MESSAGE: MainType.AUTHENTICATION
     // SubType.LOGIN
@@ -108,7 +116,7 @@ public class Client {
         System.out.println(user.getUsername() + " attempting to log in...");
         
         Message loginRequestMessage = new Message(MainType.AUTHENTICATION, SubType.LOGIN, Status.REQUEST, user.getUsername() + "requesting login", user); //login message created
-        messageHistory.add(loginRequestMessage); //add the login message to the message history
+        updateMessageHistory(loginRequestMessage); //add the login message to the message history
         
         objectOutputStream.writeObject(loginRequestMessage); //sending the login message to server
         
@@ -116,7 +124,7 @@ public class Client {
         objectInputStream = new ObjectInputStream(serverInputStream); // we need to reconstruct the message object
         
         Message incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
-        messageHistory.add(incomingLoginResponse);
+        updateMessageHistory(incomingLoginResponse);
         
         if(incomingLoginResponse.status == Status.SUCCESS) {
             System.out.println(incomingLoginResponse.getText() + "\n");
@@ -132,8 +140,8 @@ public class Client {
     // SubType.LOGOUT
 	public static void logout() throws IOException, ClassNotFoundException {
 		Message logOutRequest = new Message(MainType.AUTHENTICATION, SubType.LOGOUT , Status.REQUEST, user.getUsername() + "Requesting logout...\n", user);
-		messageHistory.add(logOutRequest); //store operation in history
-		objectOutputStream.writeObject(logOutRequest);
+		updateMessageHistory(logOutRequest); //store operation in history
+		sendToServer(logOutRequest);
 	}
 	
 	
@@ -141,9 +149,9 @@ public class Client {
 	// MESSAGE: MainType.TEXT
 	// SubType.SEND_TEXT_MESSAGE
 	public static void sendMessage(String text, int chatId) throws IOException {
-    Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, text, user.getUsername(), chatId);
-    messageHistory.add(message); //the message the user input should be sent
-    objectOutputStream.writeObject(message); //where the object gets serialized and sent     
+	    Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, text, user, chatId);
+	    updateMessageHistory(message); //the message the user input should be sent
+	    sendToServer(message); //where the object gets serialized and sent     
 	}
 
 	
@@ -152,16 +160,16 @@ public class Client {
 	// SubType.ACTUAL_CHAT
 	public static void requestActualChat() throws IOException, ClassNotFoundException {
 		Message actualChatRequest = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT , Status.REQUEST, null, user);
-		messageHistory.add(actualChatRequest); //store operation in history
-		objectOutputStream.writeObject(actualChatRequest);
+		updateMessageHistory(actualChatRequest); //store operation in history
+		sendToServer(actualChatRequest);
 
 	}
 	
 	// SubType.USER_STATE
 	public static void getUserState() throws IOException, ClassNotFoundException {
 		Message userStateRequest = new Message(MainType.DISPLAY, SubType.USER_STATE , Status.REQUEST, null, user);
-		messageHistory.add(userStateRequest); //store operation in history
-		objectOutputStream.writeObject(userStateRequest);
+		updateMessageHistory(userStateRequest); //store operation in history
+		sendToServer(userStateRequest);
 	}
 	
 	
@@ -169,30 +177,30 @@ public class Client {
 	// CREATE_GC 	||       this will work for making either a DM or GC
 	public void createChat(String usernames) throws IOException {
 		Message createGC= new Message(MainType.CHAT_OPERATION, SubType.CREATE_GC , Status.REQUEST, usernames, user);
-		messageHistory.add(createGC); //store operation in history
-		objectOutputStream.writeObject(createGC);
+		updateMessageHistory(createGC); //store operation in history
+		sendToServer(createGC);
 	}
 	
 	// SubType.ADD_USER_TO_GC
 	public void addUserToChat(String username) throws IOException {
 		Message addUserToGC = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC , Status.REQUEST, username, user);
-		messageHistory.add(addUserToGC); //store operation in history
-		objectOutputStream.writeObject(addUserToGC);
+		updateMessageHistory(addUserToGC); //store operation in history
+		sendToServer(addUserToGC);
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
 	public void removeUserFromChat(String username) throws IOException {
 		Message removeUserFromGC = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC , Status.REQUEST, username, user);
-		messageHistory.add(removeUserFromGC); //store operation in history
-		objectOutputStream.writeObject(removeUserFromGC);
+		updateMessageHistory(removeUserFromGC); //store operation in history
+		sendToServer(removeUserFromGC);
 	}
 	
 	// SubType.DELETE_GC
 	public void DeleteChat(String chatID) throws IOException {
 		//need a chatID to perform, most likely the chat were hovering over/clicking on
 		Message chatToDelete = new Message(MainType.CHAT_OPERATION, SubType.DELETE_GC , Status.REQUEST, chatID, user);
-		messageHistory.add(chatToDelete); //store operation in history
-		objectOutputStream.writeObject(chatToDelete);
+		updateMessageHistory(chatToDelete); //store operation in history
+		sendToServer(chatToDelete);
 	}	
 		
 	
@@ -201,30 +209,29 @@ public class Client {
 	// SubType.ENTER_AUDIT_MODE
 	public void enterAuditMode() throws IOException {
 		Message enterAuditMode = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE , Status.REQUEST, null, user);
-		messageHistory.add(enterAuditMode); //store operation in history
-		objectOutputStream.writeObject(enterAuditMode);
+		updateMessageHistory(enterAuditMode); //store operation in history
+		sendToServer(enterAuditMode);
 	}
 	
 	// SubType.SELECT_USER
 	public void audit_SelectUser(String username) throws IOException {
 		Message selectedUser = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER , Status.REQUEST, username, user);
-		messageHistory.add(selectedUser); //store operation in history
-		objectOutputStream.writeObject(selectedUser);
+		updateMessageHistory(selectedUser); //store operation in history
+		sendToServer(selectedUser);
 	}
 	
 	// SubType.VIEW_CHATS
 	public void audit_ViewChats() throws IOException {
 		Message viewChatsRequest = new Message(MainType.AUDIT_OPERATION, SubType.VIEW_CHATS , Status.REQUEST, null, user);
-		messageHistory.add(viewChatsRequest); //store operation in history
-		objectOutputStream.writeObject(viewChatsRequest);
+		updateMessageHistory(viewChatsRequest); //store operation in history
+		sendToServer(viewChatsRequest);
 	}
 	
 	// SubType.EXPORT_CHAT_LOG
 	public void audit_ExportChatLog() throws IOException {
 		Message exportLogRequest = new Message(MainType.AUDIT_OPERATION, SubType.EXPORT_CHAT_LOG , Status.REQUEST, null, user);
-		messageHistory.add(exportLogRequest); //store operation in history
-		objectOutputStream.writeObject(exportLogRequest);
+		updateMessageHistory(exportLogRequest); //store operation in history
+		sendToServer(exportLogRequest);
 	}
-	
 
 }
