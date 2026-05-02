@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.*;
 
 import chat.Chat;
+import networking.Client;
 import user.User;
 
 
@@ -23,14 +24,16 @@ public class GUI {
 	boolean isLogged = false;
 	boolean auditMode = false;
 	User user;
+	Client client;
 	JScrollPane msgScrollPane; 
 	JTextArea textArea;
 	JPanel panel1;
 	
-	public GUI(User user)
+	public GUI(User user, Client client)
 	 {
 		 buildGUI();
 		 this.user = user;
+		 this.client = client;
 	 }
 	
 	 public void buildGUI() {
