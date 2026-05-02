@@ -18,7 +18,20 @@ public class Chat implements Serializable {
 	public Chat(String creatorUsername, String[] memberUsernames, ChatType type) {
 		// Might need to Change this for dynamic arrays
 		numMembers = memberUsernames.length;
-		this.memberUsernames = memberUsernames;
+		boolean creatorInUsernames = false;
+		for(String name : memberUsernames) {
+			if(name.compareTo(creatorUsername) == 0)
+				creatorInUsernames = true;
+		}
+		if(!creatorInUsernames)
+			numMembers++;
+		this.memberUsernames = new String[numMembers];
+		int index = 0;
+		if(!creatorInUsernames)
+			memberUsernames[index++] = creatorUsername;
+		for(String name : memberUsernames)
+			memberUsernames[index++] = name;
+		
 		//
 		this.creatorUsername = creatorUsername;
 		chatType = type;
