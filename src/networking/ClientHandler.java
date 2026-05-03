@@ -56,7 +56,7 @@ public class ClientHandler implements Runnable{
                message = (Message) objectInputStream.readObject(); //read the incoming object
                messageList.add(message); //add the incoming messages to the array
 
-               performMessageOperation(clientSocket, clientInputStream, message, messageList); //this would perform the appropriate operation depending on the message Main and Sub types
+               performMessageOperation(clientSocket, clientInputStream, message); //this would perform the appropriate operation depending on the message Main and Sub types
             }
             Message logoutSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGOUT, Status.SUCCESS, "Logout successful", null);
             messageList.add(logoutSuccess);
@@ -87,7 +87,7 @@ public class ClientHandler implements Runnable{
 //add logout operation method below:
 
     //facade/wrapper function that calls the function corresponding to the message types
-    public void performMessageOperation(Socket clientSocket, InputStream clientInputStream, Message message, List<Message> messageList) throws IOException { //mainType:  AUTHENTICATION, DISPLAY, TEXT, CHAT_OPERATION, AUDIT_OPERATION
+    public void performMessageOperation(Socket clientSocket, InputStream clientInputStream, Message message) throws IOException { //mainType:  AUTHENTICATION, DISPLAY, TEXT, CHAT_OPERATION, AUDIT_OPERATION
         if (message.mainType == MainType.DISPLAY) {
             switch (message.subType){
                 case SubType.ACTUAL_CHAT:
@@ -174,8 +174,8 @@ public class ClientHandler implements Runnable{
         messageList.add(loginFailed); //login message that is sent out from server to client gets added to the array
     }
 
-	public void sendToClient(List<Message> messages) throws IOException {
-		objectOutputStream.writeObject(messages);
+	public void sendToClient(Message message) throws IOException {
+		objectOutputStream.writeObject(message);
 	}
 
 	private void handleSendText(Message message) {
@@ -189,14 +189,14 @@ public class ClientHandler implements Runnable{
 		}
 	}
 
-	private void handleEnterAuditResponse(boolean isIt) {
+	private void handleEnterAuditResponse(boolean isIt) throws IOException {
 		Status status;
 		if(isIt)
 			status = Status.SUCCESS;
 		else
 			status = Status.FAILED;
-			
-
-		Message auditSuccess = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE, Status.SUCCESS)
+		Message auditSuccess = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE, status);
+		sendToClient(auditSuccess);
+    messageList.add(auditSuccess);
 	}
 }

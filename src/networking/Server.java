@@ -65,7 +65,6 @@ public class Server {
     
     public User handleCreateNewUser(User user, ClientHandler clientHandler) throws IOException {
     	Message authenticationResponse = null;
-    	List<Message> messageToSend = new ArrayList<>();
     	User newUser = userLoginModule.createUser(user);
     	if(newUser != null) {
     		users.add(newUser);
@@ -74,27 +73,26 @@ public class Server {
     	else {
     		authenticationResponse = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.FAILED, "Failed to create new user", newUser);
     	}
-    	messageToSend.add(authenticationResponse);
-    	clientHandler.sendToClient(messageToSend);
+    	clientHandler.sendToClient(authenticationResponse);
     	return newUser;
 	}
     
-    public void sendToEVERYClients(List<Message> messages) throws IOException {
+    public void sendToEVERYClients(Message message) throws IOException {
     	for(ClientHandler client : currentClients) {
-    		client.sendToClient(messages);
+    		client.sendToClient(message);
     	}
     }
 
-    public void sendToClients(List<Message> messages, String[] usernames) throws IOException {
+    public void sendToClients(Message message, String[] usernames) throws IOException {
     	for(String username : usernames) {
     		ClientHandler client = mapUsernameToClient.get(username);
-    		client.sendToClient(messages);
+    		client.sendToClient(message);
     	}
     }
 
-    public void sendToClient(List<Message> messages, String username) throws IOException {
+    public void sendToClient(Message message, String username) throws IOException {
     	ClientHandler client = mapUsernameToClient.get(username);
-    	client.sendToClient(messages);
+    	client.sendToClient(message);
     }
     
 	// MESSAGE: MainType.TEXT    
@@ -108,9 +106,7 @@ public class Server {
 			System.err.println("Invalid Chat Id of " + chatId + " detected from user: " + username);
 			
 			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, txtMsg, chatId);
-			List<Message> failureMessages = new ArrayList<>();
-			failureMessages.add(failedText);
-			sendToClient(failureMessages, username);
+			sendToClient(failedText, username);
 			return;
 		}
 		String[] usernames = chats.getChatMembers(chatId);
@@ -121,9 +117,7 @@ public class Server {
     		}
     	
         Message msgToSend = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, txtMsg, chatId);
-        List<Message> messagesToSend = new ArrayList<>();
-        messagesToSend.add(msgToSend);
-        sendToClients(messagesToSend, usernames);
+        sendToClients(msgToSend, usernames);
     }
    
 	// MESSAGE: MainType.CHAT_OPERATIONs    
