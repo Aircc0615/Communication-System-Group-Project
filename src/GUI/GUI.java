@@ -98,6 +98,7 @@ public class GUI {
 			    //System.out.println(username + "\n"+ password);
 			    try {
 					client.createNewAccount(user);
+					System.out.print("sucess");
 					
 				} catch (IOException e1) {
 					e1.printStackTrace();

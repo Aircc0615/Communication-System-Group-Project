@@ -171,8 +171,8 @@ public class Client {
 		sendToServer(logOutRequest);
 	}
 	
-	public static void createNewAccount(User user) throws IOException {
-		Message createAccountRequest = new Message(MainType.AUTHENTICATION, SubType.LOGOUT , Status.REQUEST, user.getUsername() + "attempting to create account...\n", user);
+	public void createNewAccount(User user) throws IOException {
+		Message createAccountRequest = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.REQUEST, user.getUsername() + "attempting to create account...\n", user);
 		updateMessageHistory(createAccountRequest); //store operation in history
 		sendToServer(createAccountRequest);
 	}
