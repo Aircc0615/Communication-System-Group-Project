@@ -464,7 +464,7 @@ public class GUI {
 	 // SubType.SEND_TEXT_MESSAGE
 	 //GUI needs a way to know which chat were referencing. 
 	 private void handleSendMessage(String messageToSend) throws IOException {
-		 client.sendMessage(messageToSend, 0); //user should not have to pass the chatID, this needs to be done for the user
+		 client.sendMessage(messageToSend, currentChatId); //user should not have to pass the chatID, this needs to be done for the user
 	 }
 	 
 	 // MESSAGE: MainType.DISPLAY
