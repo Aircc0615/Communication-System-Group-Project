@@ -91,8 +91,7 @@ public class Client {
         		if(msg.subType == SubType.ACTUAL_CHAT) {
         			System.out.println("Gets into new chat load");
         			user.addChat(msg.getChat());
-        			user.addChatThreadSafety();
-        			gui.reloadChatList();
+        			updateChatList();
         		}
         	} else if(msg.mainType == MainType.AUTHENTICATION) {
 	          if(msg.subType == SubType.LOGOUT) {
@@ -267,5 +266,9 @@ public class Client {
 		updateMessageHistory(exportLogRequest); //store operation in history
 		sendToServer(exportLogRequest);
 	}
-
+	
+	private void updateChatList() {
+     user.addChatThreadSafety();
+     gui.reloadChatList();
+	}
 }
