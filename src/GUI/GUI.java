@@ -347,6 +347,7 @@ public class GUI {
 			auditMode = false;
 			try {
 				logoutUser();
+				mainFrame.setVisible(false);
 			} catch (ClassNotFoundException | IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -375,7 +376,7 @@ public class GUI {
 		 
 		 CreateChat.addActionListener(e -> {
 			 //input popup that allows user to input who to send to
-			 String usernames = JOptionPane.showInputDialog(e, "Enter usernames serparated by commas: "); //whatever the user inputs needs to be stored here
+			 String usernames = JOptionPane.showInputDialog(mainFrame, "Enter usernames serparated by commas: "); //whatever the user inputs needs to be stored here
 			 if(usernames != null) {
 				 try {
 					handleCreateChat(usernames);
@@ -390,6 +391,7 @@ public class GUI {
 		 
 		 return chatOption;
 	 }
+	 
 	 
 	 public void reloadChatList() {
 		 if(chatListPanel == null) {
@@ -436,77 +438,11 @@ public class GUI {
 		 else {
 			 JOptionPane.showMessageDialog(loginFrame, "Login failed! Invalid username/password.");
 		 }
-		 
-		 /*
-		 User tempUser = new User(username, password);
-		 
-		 User user = client.login(tempUser);
-		 
-		 isLogged = client.login(user, .....);
-		 isLogged = user.authenticateLogin(username, password);
-		 System.out.println(isLogged);
-		 System.out.println(username + "\n"+ password);
-		 
-		 if(!isLogged) {
-			 JOptionPane.showMessageDialog(loginFrame, "Login failed");
-			 return;
-		 }
-		 */
 
 		 
 	 }
 	 
-	 private void handleCreatePrivateChat() {
-		 
-		 String userId = JOptionPane.showInputDialog(mainFrame, "Enter a user ID", "Create New Private chat", JOptionPane.PLAIN_MESSAGE);
-		 System.out.println("Entered userId: " + userId);
-	 }
 	 
-	 private void handleCreateGroupChat() {
-		 String groupName = JOptionPane.showInputDialog(mainFrame, "Enter a group name", "Create New Groupchat", JOptionPane.PLAIN_MESSAGE);
-		 
-		 
-
-		 if (groupName == null) return;
-
-		 int value;
-
-		 while (true) {
-		     String numMembers = JOptionPane.showInputDialog(
-		         mainFrame,
-		         "How many members will you be adding?",
-		         "Create New Groupchat",
-		         JOptionPane.PLAIN_MESSAGE
-		     );
-
-		     if (numMembers == null) return;
-
-		     try {
-		         value = Integer.parseInt(numMembers.trim());
-		         break;
-		     } catch (NumberFormatException e) {
-		         JOptionPane.showMessageDialog(mainFrame, "Please enter a valid integer.");
-		     }
-		 }
-		//validat input
-		 String[] members = new String[value];
-		 for (int i = 0; i < value; i++) {
-			 members[i] = JOptionPane.showInputDialog(mainFrame, "Enter a group name", "Create New Groupchat", JOptionPane.PLAIN_MESSAGE);
-			 if(members[i]== null ) {
-				 return;
-			 }
-			 
-		 }
-		 
-		 
-		 System.out.println(groupName);
-		 
-		 
-	 }
-	 
-	 private void HandleSendMessage() {
-		 
-	 }
 	 
 	 
 	 // SubType.LOGOUT
