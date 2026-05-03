@@ -20,6 +20,7 @@ public class Client {
 	static List<Message> messageHistory = new ArrayList<>(); //client side message history
 	static Scanner sin = new Scanner(System.in);
 	private static User user;
+	private static User selectedAuditUser;
 	private static GUI gui;
 	
 	
@@ -216,6 +217,14 @@ public class Client {
 		Message enterAuditMode = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE , Status.REQUEST, null, user);
 		updateMessageHistory(enterAuditMode); //store operation in history
 		sendToServer(enterAuditMode);
+	}
+
+	public void auditResponse(boolean isIt) {
+		if(!isIt)
+			return;
+		//Gui Logic for switching to audit view goes here
+		//
+		//
 	}
 	
 	// SubType.SELECT_USER

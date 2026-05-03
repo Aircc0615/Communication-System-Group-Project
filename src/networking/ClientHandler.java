@@ -195,8 +195,8 @@ public class ClientHandler implements Runnable{
 			status = Status.SUCCESS;
 		else
 			status = Status.FAILED;
-		Message auditSuccess = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE, status);
-		sendToClient(auditSuccess);
-    messageList.add(auditSuccess);
+		Message auditMode = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE, status);
+		sendToClient(auditMode);
+    messageList.add(auditMode);
 	}
 }

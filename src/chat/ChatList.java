@@ -112,9 +112,9 @@ public class ChatList implements Serializable{
 			throw new IndexOutOfBoundsException();
 		Chat chat = tempChats[chatIndex];
 		if (chat.getChatType() == ChatType.PRIVATE)
-			return;
+			throw new IllegalArgumentException();
 		if (chat.getCreatorUsername() != fromUsername)
-			return;
+			throw new IllegalArgumentException();
 		chat.addMember(memberUsername); // add member
 	}
 
