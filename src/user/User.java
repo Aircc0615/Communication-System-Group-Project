@@ -429,4 +429,9 @@ public class User implements Serializable {
 	public void updateChatOrder(int chatId) {
 		chatList.updateOrder(chatId);
 	}
+
+	public void addChatThreadSafety() {
+		chatList.addThreadSafety();
+		unreadChatList.addThreadSafety();
+	}
 }

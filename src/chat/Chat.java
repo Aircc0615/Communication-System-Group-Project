@@ -13,7 +13,7 @@ public class Chat implements Serializable {
 	private static int count = 1;
 	private final int chatId;
 	private Instant newestUpdate;
-	private Object mutexObject;
+	private transient Object mutexObject;
 
 	public Chat(String creatorUsername, String[] memberUsernames, ChatType type) {
 		// Might need to Change this for dynamic arrays
@@ -242,5 +242,10 @@ public class Chat implements Serializable {
 			return new Chat(copyMessages, numMessages, copyMembers, numMembers, chatType, creatorUsername, chatId,
 			    newestUpdate);
 		}
+	}
+
+	public void addThreadSafety() {
+		if(mutexObject == null)
+			mutexObject = new Object();
 	}
 }

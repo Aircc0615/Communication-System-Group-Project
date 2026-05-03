@@ -21,7 +21,7 @@ public class Server {
 	private int numOnlineUsers;
 	private static List<ClientHandler> currentClients = new ArrayList<>();
 	private int numCurrentClients;
-	private HashMap<String, ClientHandler> mapUsernameToClient; //string is username
+	private HashMap<String, ClientHandler> mapUsernameToClient = new HashMap(); //string is username
 	private HashMap<String, User> usernameToUser = new HashMap();
 	private UserLoginModule userLoginModule = new UserLoginModule(usernameToUser); 
 	

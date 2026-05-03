@@ -9,7 +9,7 @@ import java.time.Instant;
 public class ChatList implements Serializable{
 	private Chat[] chats;
 	private int numChats;
-	private Object writeMutex;
+	private transient Object writeMutex;
 
 	public ChatList() {
 		// default chat size
@@ -273,5 +273,14 @@ public class ChatList implements Serializable{
 	public String[] getChatMembers(int chatId) {
 		Chat[] tempChats = chats;
 		return tempChats[chatId].getMembersInChat();
+	}
+
+	public void addThreadSafety() {
+		if(writeMutex == null)
+			writeMutex = new Object();
+		Chat[] tempChats = chats;
+		for(Chat chat : tempChats)
+			if(chat != null)
+				chat.addThreadSafety();
 	}
 }
