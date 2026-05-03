@@ -17,12 +17,10 @@ import user.UserLoginModule;
 
 public class Server {
 	private List<User> users = new ArrayList<>();
-	private int numUsers;
 	private ChatList chats = new ChatList();
 	private List<User> onlineUsers = new ArrayList<>();
 	private int numOnlineUsers;
 	private static List<ClientHandler> currentClients = new ArrayList<>();
-	private int numCurrentClients;
 	private HashMap<String, ClientHandler> mapUsernameToClient = new HashMap(); //string is username
 	private HashMap<String, Set<ClientHandler>> mapUsernameToITClient = new HashMap();
 	private HashMap<ClientHandler, String> mapITClientToUsername = new HashMap();
@@ -93,7 +91,7 @@ public class Server {
     	Message authenticationResponse;
     	if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
-    		System.out.println("Successful");
+    		System.out.println( "\n" + user.getUsername() + "Successful login!");
     		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
     		sendToClient(authenticationResponse, user.getUsername());
     	} else {
@@ -108,10 +106,10 @@ public class Server {
     	User newUser = userLoginModule.createUser(user);
     	if(newUser != null) {
     		users.add(newUser);
-	        authenticationResponse = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.SUCCESS, "User created successfully", newUser); //create a login success message to send to the user
+	        authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.SUCCESS, "User created successfully", newUser); //create a login success message to send to the user
     	}
     	else {
-    		authenticationResponse = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.FAILED, "Failed to create new user", newUser);
+    		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.FAILED, "Failed to create new user", newUser);
     	}
     	clientHandler.sendToClient(authenticationResponse);
     	return newUser;
@@ -185,8 +183,11 @@ public class Server {
 		
 		for(String name : usernames) {
 			User otherUser = usernameToUser.get(name);
-			otherUser.updateChatOrder(chatId);
-    		}
+			if(otherUser != null) {
+				otherUser.updateChatOrder(chatId);
+			}
+			else continue;
+    	}
     	
         Message msgToSend = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, txtMsg, chatId);
         sendToClients(msgToSend, usernames);
@@ -202,7 +203,7 @@ public class Server {
 		
 		for(int i = 0; i < memberUsernames.length; i++) {
 			String userToValidate = memberUsernames[i].trim();
-			if(usernameToUser.containsKey(userToValidate)) {
+			if(userToValidate.length() >= 1 && usernameToUser.containsKey(userToValidate)) { //need to update to check for length of 6 chars later
 				validUsers.add(userToValidate);
 			}
 		}
@@ -389,6 +390,13 @@ public class Server {
 				break;
 		}
 		return message;
+  }
+	// helper
+	public void printAllUsers() {
+		for(int i = 0; i < users.size(); i++) {
+			System.out.println(users.get(i).getUsername());
+		}
+		
 	}
 }
 

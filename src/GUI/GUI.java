@@ -42,6 +42,7 @@ public class GUI {
 		 this.client = client;
 		 client.assignGUI(this);
 		 currentChatId = -1;
+		 client.connectToServer(); //as soon as the application runs we connect to the server
 		 buildGUI();
 	 }
 	
@@ -63,8 +64,6 @@ public class GUI {
 		 
 	 }
 	 public void createLoginForm() throws UnknownHostException, IOException {
-		 client.connectToServer(); //as soon as the application runs we connect to the server
-		 
 		 JLabel userLabel = new JLabel("Username");
 		 JTextField usernameField = new JTextField(16);
 		 
@@ -72,6 +71,7 @@ public class GUI {
 		 JPasswordField passwordField = new JPasswordField(16);
 		 
 		 JButton submitB = new JButton("Login");
+		 JButton createNewAccountBtn = new JButton("Create Account");
 		 
 		 JLabel welcomeLabel = new JLabel("Welcome", SwingConstants.CENTER);
 		 welcomeLabel.setFont(new Font("Arial", Font.BOLD, 28));
@@ -90,6 +90,29 @@ public class GUI {
 				}
 			});
 		 
+		 createNewAccountBtn.addActionListener(e -> {
+			    String username = usernameField.getText();
+			    String password = new String(passwordField.getPassword());
+			    user = new User(username, password);
+			    //System.out.println(username + "\n"+ password);
+			    try {
+					if(createNewAccount()) { //if the account was made successfully
+						JOptionPane.showMessageDialog(loginFrame, 
+								"Your account was succesfully created. Please try loggin in!",
+								"Account Succesfully Created",
+								JOptionPane.DEFAULT_OPTION);
+					}
+					else { //failed to make the account
+						JOptionPane.showMessageDialog(loginFrame, 
+								"Please provide a unique username. Username and password must be a minimum of 6 characters in length.",
+								"Account Creation Failed",
+								JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (IOException | ClassNotFoundException e1 ) {
+					e1.printStackTrace();
+				}
+			});
+		 
 		 //layout
 		 JPanel formPanel = new JPanel();
 	     formPanel.setLayout(new GridLayout(5, 1, 0, 1));
@@ -99,10 +122,17 @@ public class GUI {
 	     formPanel.add(passLabel);
 	     formPanel.add(passwordField);
 	     
+	     JPanel buttonPanel = new JPanel();
+	     buttonPanel.setLayout(new GridLayout(2, 1, 0, 8));
+	     buttonPanel.add(submitB);
+	     buttonPanel.add(createNewAccountBtn);
+	     
+	     
 	     //combine login
 	     JPanel mainPanel = new JPanel(new BorderLayout(0, 10));
 	     mainPanel.add(formPanel, BorderLayout.CENTER);
-	     mainPanel.add(submitB, BorderLayout.SOUTH);
+	     mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+	    
 
 	     JPanel centerPanel = new JPanel(new GridBagLayout());
 	     centerPanel.add(mainPanel);
@@ -616,6 +646,11 @@ public class GUI {
 	 // SubType.LOGOUT
 	 private void logoutUser() throws ClassNotFoundException, IOException {
 		 client.logout();
+	 }
+	 
+	// SubType.CREATE_USER
+	 public boolean createNewAccount() throws IOException, ClassNotFoundException {
+		 return client.createNewAccount(user);
 	 }
 	 	 
 	 // MESSAGE: MainType.TEXT
