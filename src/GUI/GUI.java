@@ -415,6 +415,8 @@ public class GUI {
 		 if(currentChatId != -1) {
 			 displayChat(currentChatId);
 		 }
+		 chatListPanel.revalidate();
+		 chatListPanel.repaint();
 	 }
 	 
 	 // CLIENT OPERATIONS

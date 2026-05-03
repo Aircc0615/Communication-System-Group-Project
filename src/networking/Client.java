@@ -90,7 +90,6 @@ public class Client {
         	if(msg.mainType == MainType.DISPLAY) {
         		if(msg.subType == SubType.ACTUAL_CHAT) {
         			System.out.println("Gets into new chat load");
-        			int chatId = msg.getChat().getChatId();
         			user.addChat(msg.getChat());
         			gui.reloadChatList();
         		}
