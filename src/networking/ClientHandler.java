@@ -35,8 +35,9 @@ public class ClientHandler implements Runnable{
             OutputStream outputStream = clientSocket.getOutputStream();
             objectOutputStream = new ObjectOutputStream(outputStream); //this allows us to send stuff out to the client
 
-            Message message = (Message) objectInputStream.readObject(); //incoming message from client gets deserialized
+            Message message;
             while(true) {
+            	message = (Message) objectInputStream.readObject(); //incoming message from client gets deserialized
             	messageList.add(message); //add the client message to the array of messages on the server side
             	
             	if (message.mainType == MainType.AUTHENTICATION) { //if its a login

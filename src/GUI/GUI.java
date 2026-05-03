@@ -270,6 +270,14 @@ public class GUI {
 		 }else {
 			 JTextField inputField = new JTextField();
 			 JButton sendButton = new JButton("Send");
+			 sendButton.addActionListener(e -> {
+				 try {
+					handleSendMessage(inputField.getText());
+				 } catch (IOException e1) {
+					e1.printStackTrace();
+				 }
+				 inputField.setText("");
+			 });
 
 			 rightBottomPanel.add(inputField, BorderLayout.CENTER);
 			 rightBottomPanel.add(sendButton, BorderLayout.EAST);
@@ -464,6 +472,8 @@ public class GUI {
 	 // SubType.SEND_TEXT_MESSAGE
 	 //GUI needs a way to know which chat were referencing. 
 	 private void handleSendMessage(String messageToSend) throws IOException {
+		 if(currentChatId == -1)
+			 return;
 		 client.sendMessage(messageToSend, currentChatId); //user should not have to pass the chatID, this needs to be done for the user
 	 }
 	 
