@@ -98,6 +98,9 @@ public class Chat implements Serializable {
 	// adds a new member to the chat
 	public void addMember(String username) {
 		synchronized (mutexObject) {
+			for(String name : memberUsernames)
+				if(name.compareTo(username) == 0)
+					throw new IllegalArgumentException();
 			if (numMembers >= memberUsernames.length) { // makes space if need be (2x)
 				String[] newMemberUsernames = new String[memberUsernames.length * 2];
 				for (int i = 0; i < memberUsernames.length; i++) {

@@ -3,6 +3,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Date;
 
+import chat.Chat;
 import chat.TextMessage;
 import user.User;
 
@@ -23,6 +24,7 @@ public class Message implements Serializable { //serialize takes the object and 
     private int userId;
     private int chatId;
     private TextMessage textMessage;
+    private Chat chat;
     
     private String chatList;
     private String chatUserList;
@@ -50,6 +52,14 @@ public class Message implements Serializable { //serialize takes the object and 
         this.text = text;
         this.username = username;
         this.chatId = chatId;
+    }
+
+    public Message(MainType mainType, SubType subType, Status status, Chat chat) {
+    	id = count++;
+    	this.mainType = mainType;
+    	this.subType = subType;
+    	this.status = status;
+    	this.chat = chat;
     }
     
     public Message(MainType mainType, SubType subType, Status status, String text, User user, int chatId) {

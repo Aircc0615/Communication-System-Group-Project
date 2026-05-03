@@ -122,7 +122,7 @@ public class Server {
    
 	// MESSAGE: MainType.CHAT_OPERATIONs    
 	// SubType.CREATE_GC
-	public void handleCreateChat(Message message, ClientHandler clientHandler) {
+	public void handleCreateChat(Message message, ClientHandler clientHandler) throws IOException {
 		String usersToBeAddedToChat = message.getUser().getUsername() + ", "+ message.getText();
 		String[] memberUsernames = usersToBeAddedToChat.split(","); //the usernames will be passed as a single string so we split
 		List<String> validUsers = new ArrayList<>();
@@ -136,43 +136,61 @@ public class Server {
 		}
 		
 		String[] chatUsers = validUsers.toArray(new String[0]);
+		Message messageToSend;
+		if(chatUsers.length >= 2) {
+			Chat newChat = null;
+			if(chatUsers.length == 2)
+				newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.PRIVATE);
+			else
+				newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.GROUP);
+			int chatId = newChat.getChatId();
+			chats.addChat(newChat);
 		
-		Chat newChat = null;
-		if(chatUsers.length == 2) {
-			newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.PRIVATE);
+			for(String username : chatUsers) {
+				User user = usernameToUser.get(username);
+				user.addChat(newChat);
+			}
+			newChat = chats.getCopyOfChat(chatId);
+			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ACTUAL_CHAT, Status.SUCCESS, newChat);
+			sendToClients(messageToSend, chatUsers);
+			return;
 		}
-		else {
-			newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.GROUP);
-		}
-		chats.addChat(newChat);
-		
+		messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ACTUAL_CHAT, Status.FAILED);
 		//need to send response to client
+		sendToClient(messageToSend, message.getUser().getUsername());
 	}
 	
 	// SubType.ADD_USER_TO_GC
-	public void handleAddUserToChat(Message message, ClientHandler clientHandler) {
+	public void handleAddUserToChat(Message message, ClientHandler clientHandler) throws IOException {
 		int chatId = message.getChatId();
 		String chatOwner = message.getUser().getUsername();
 		String userToAdd= message.getText(); //we need to make sure we store the username of who is being added in the text field
+		Message messageToSend;
 		
 		try {
 			chats.addChatMember(chatId, userToAdd, chatOwner);
-		} catch(IndexOutOfBoundsException e) {
-			
+			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.SUCCESS, "", chatOwner, chatId);
+		} catch(Exception e) {
+			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.FAILED);
 		}
+		sendToClient(messageToSend, userToAdd);
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
-	public void handleRemoveUserFromChat(Message message, ClientHandler clientHandler) {
+	public void handleRemoveUserFromChat(Message message, ClientHandler clientHandler) throws IOException {
 		int chatId = message.getChatId();
 		String chatOwner = message.getUser().getUsername();
 		String userToRemove = message.getText(); //we need to make sure we store the username of who is being removed in the text field
+		Message msgToSend;
 		
 		try {
-		chats.removeChatMember(chatId, userToRemove, chatOwner);
+			chats.removeChatMember(chatId, userToRemove, chatOwner);
+			usernameToUser.get(userToRemove).removeChat(chatId, chatOwner);;
+			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.SUCCESS, "", chatOwner, chatId);
 		} catch(IndexOutOfBoundsException e) {
-			
+			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.FAILED);
 		}
+		sendToClient(msgToSend, userToRemove);
 	}
 	
 	// SubType.DELETE_GC

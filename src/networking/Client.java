@@ -209,6 +209,14 @@ public class Client {
 		updateMessageHistory(enterAuditMode); //store operation in history
 		sendToServer(enterAuditMode);
 	}
+
+	public void auditResponse(boolean isIt) {
+		if(!isIt)
+			return;
+		//Gui Logic for switching to audit view goes here
+		//
+		//
+	}
 	
 	// SubType.SELECT_USER
 	public void audit_SelectUser(String username) throws IOException {
