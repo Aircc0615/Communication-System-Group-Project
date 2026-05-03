@@ -139,7 +139,8 @@ public class ClientHandler implements Runnable{
         else if(message.mainType == MainType.AUDIT_OPERATION){
             switch (message.subType) {
                 case SubType.ENTER_AUDIT_MODE:
-                	server.handleEnterAuditMode(message, this);
+                	boolean isIt = server.handleEnterAuditMode(message, this);
+                		handleEnterAuditResponse(isIt);
                     break;
                 case SubType.SELECT_USER:
                 	server.handleAuditSelectUser(message, this);
@@ -186,5 +187,16 @@ public class ClientHandler implements Runnable{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void handleEnterAuditResponse(boolean isIt) {
+		Status status;
+		if(isIt)
+			status = Status.SUCCESS;
+		else
+			status = Status.FAILED;
+			
+
+		Message auditSuccess = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE, Status.SUCCESS)
 	}
 }
