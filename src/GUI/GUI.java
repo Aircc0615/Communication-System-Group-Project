@@ -135,39 +135,63 @@ public class GUI {
 		 addChatPanel.setPreferredSize(new Dimension(240, 50));
 		 addChatPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		 addChatPanel.setLayout(new BoxLayout( addChatPanel, BoxLayout.X_AXIS));
-		 
-		 
-		 
-		 JLabel newChatLabel = new JLabel("               Create New Chat" );
-		 
-		 
-		 newChatLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		 newChatLabel.setOpaque(true);  
-		 newChatLabel.setBackground(new Color(163, 177, 138));
-		 newChatLabel.setPreferredSize(new Dimension(240, 40));
-		 newChatLabel.setMaximumSize(newChatLabel.getPreferredSize());
-		 
-		 newChatLabel.addMouseListener(new MouseAdapter() {
-			 public void mouseClicked(MouseEvent e) {
-				 try {
-					createNewChatOption().show(addChatPanel, e.getX(), e.getY());
-				 } catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				 }
-			    }
-		 });
-		 
-		 
-		 
-		 addChatPanel.add(newChatLabel);
-		 
-		 
-		 
+		
+		
+		 if(auditMode == true) {
+			 JLabel selectUserLabel = new JLabel("               Select User" );
+			
+			 selectUserLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			 selectUserLabel.setOpaque(true); 
+			 selectUserLabel.setBackground(new Color(163, 177, 138));
+			 selectUserLabel.setPreferredSize(new Dimension(240, 40));
+			 selectUserLabel.setMaximumSize(selectUserLabel.getPreferredSize());
+			
+			 selectUserLabel.addMouseListener(new MouseAdapter() {
+			        public void mouseClicked(MouseEvent e) {
+			            String username = JOptionPane.showInputDialog(
+			                mainFrame,
+			                "Enter username:",
+			                "Select User",
+			                JOptionPane.PLAIN_MESSAGE
+			            );
+			            if (username != null && !username.trim().isEmpty()) {
+			                try {
+			                    audit_SelectUser(username.trim());
+			                } catch (IOException ex) {
+			                    ex.printStackTrace();
+			                }
+			            }
+			        }
+			    });
+			
+			 addChatPanel.add(selectUserLabel);
+		 }else {
+			 JLabel newChatLabel = new JLabel("               Create New Chat" );
+			 newChatLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			 newChatLabel.setOpaque(true); 
+			 newChatLabel.setBackground(new Color(163, 177, 138));
+			 newChatLabel.setPreferredSize(new Dimension(240, 40));
+			 newChatLabel.setMaximumSize(newChatLabel.getPreferredSize());
+			
+			 newChatLabel.addMouseListener(new MouseAdapter() {
+				 public void mouseClicked(MouseEvent e) {
+					 try {
+						createNewChatOption().show(addChatPanel, e.getX(), e.getY());
+					 } catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					 }
+				    }
+			 });
+			
+			 addChatPanel.add(newChatLabel);
+		 }
+		
+		
 		 
 		 //middle
-		 JScrollPane optionScrollPane = new JScrollPane();		//hold all the people user had message
-		 optionScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));	//for testing
+		 JScrollPane optionScrollPane = new JScrollPane();		
+		 optionScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));	
 		 optionScrollPane.setPreferredSize(new Dimension(240, 530));
 		 
 		 //display chatList
@@ -261,6 +285,15 @@ public class GUI {
 		 if(auditMode == true) {
 			 JButton exportButton = new JButton("Export");
 			 rightBottomPanel.add(exportButton);
+			 
+			 exportButton.addActionListener(e -> {
+				 try {
+					 audit_ExportChatLog();
+				 } catch (IOException e1) {
+					 e1.printStackTrace();
+				 }
+			 });
+			 
 			 System.out.println("enter audit mode");
 		 }else {
 			 JTextField inputField = new JTextField();
@@ -337,11 +370,13 @@ public class GUI {
 		//myProfile.addActionListener(e -> openProfilePage());
 		audit.addActionListener(e -> {
 			auditMode = true;
+			mainFrame.dispose();
 			createMainFrame();
 		});
 		
 		exitAudit.addActionListener(e -> {
 			auditMode = false;
+			mainFrame.dispose();
 			createMainFrame();
 		});
 		
@@ -349,7 +384,7 @@ public class GUI {
 			auditMode = false;
 			try {
 				logoutUser();
-				mainFrame.setVisible(false);
+				mainFrame.dispose();
 			} catch (ClassNotFoundException | IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

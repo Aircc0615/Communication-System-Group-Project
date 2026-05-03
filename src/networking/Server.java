@@ -35,7 +35,7 @@ public class Server {
     
     //used to test GUI
     public void createTestUsers() {
-    	User user1 = new User("1", "1");
+    	User user1 = new User("1", "1", true);
     	User user2 = new User("2", "2");
     	User user3 = new User("3", "3");
     	User user4 = new User("4", "4");
