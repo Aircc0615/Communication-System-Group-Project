@@ -153,7 +153,7 @@ public class Server {
 	// MESSAGE: MainType.CHAT_OPERATIONs    
 	// SubType.CREATE_GC
 	public void handleCreateChat(Message message, ClientHandler clientHandler) {
-		String usersToBeAddedToChat = message.getUser().getUsername() + ", "+ message.getText();
+		String usersToBeAddedToChat = message.getUsername() + ", "+ message.getText();
 		String[] memberUsernames = usersToBeAddedToChat.split(","); //the usernames will be passed as a single string so we split
 		List<String> validUsers = new ArrayList<>();
 		
