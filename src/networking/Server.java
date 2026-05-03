@@ -139,13 +139,18 @@ public class Server {
 	// SubType.SEND_TEXT_MESSAGE 
     public void handleSendText(String text, String username, int chatId) throws IOException {
 		User user = usernameToUser.get(username);
+		if(text.isBlank()) {
+			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, "Empty Text");
+			sendToClient(failedText, username);
+			return;
+		}
 		TextMessage txtMsg = new TextMessage(text, username, user.getId());
 		try {
 			chats.addChatMessage(chatId, txtMsg);
 		} catch (IndexOutOfBoundsException e) {
 			System.err.println("Invalid Chat Id of " + chatId + " detected from user: " + username);
 			
-			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, txtMsg, chatId);
+			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, txtMsg.getText());
 			sendToClient(failedText, username);
 			return;
 		}
