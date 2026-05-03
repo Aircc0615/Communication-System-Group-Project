@@ -72,6 +72,7 @@ public class GUI {
 		 JPasswordField passwordField = new JPasswordField(16);
 		 
 		 JButton submitB = new JButton("Login");
+		 JButton createNewAccountBtn = new JButton("Create Account");
 		 
 		 JLabel welcomeLabel = new JLabel("Welcome", SwingConstants.CENTER);
 		 welcomeLabel.setFont(new Font("Arial", Font.BOLD, 28));
@@ -90,6 +91,19 @@ public class GUI {
 				}
 			});
 		 
+		 createNewAccountBtn.addActionListener(e -> {
+			    String username = usernameField.getText();
+			    String password = new String(passwordField.getPassword());
+			    user = new User(username, password);
+			    //System.out.println(username + "\n"+ password);
+			    try {
+					client.createNewAccount(user);
+					
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			});
+		 
 		 //layout
 		 JPanel formPanel = new JPanel();
 	     formPanel.setLayout(new GridLayout(5, 1, 0, 1));
@@ -103,6 +117,8 @@ public class GUI {
 	     JPanel mainPanel = new JPanel(new BorderLayout(0, 10));
 	     mainPanel.add(formPanel, BorderLayout.CENTER);
 	     mainPanel.add(submitB, BorderLayout.SOUTH);
+	     
+	     mainPanel.add(createNewAccountBtn, BorderLayout.SOUTH); //this current just stacks the button
 
 	     JPanel centerPanel = new JPanel(new GridBagLayout());
 	     centerPanel.add(mainPanel);
