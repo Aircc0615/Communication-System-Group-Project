@@ -91,6 +91,7 @@ public class Client {
         		if(msg.subType == SubType.ACTUAL_CHAT) {
         			System.out.println("Gets into new chat load");
         			user.addChat(msg.getChat());
+        			user.addChatThreadSafety();
         			gui.reloadChatList();
         		}
         	} else if(msg.mainType == MainType.AUTHENTICATION) {
