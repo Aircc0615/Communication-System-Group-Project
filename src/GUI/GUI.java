@@ -208,12 +208,7 @@ public class GUI {
 
 	     leftBottomPane.addMouseListener(new MouseAdapter() {
 	    	 public void mouseClicked(MouseEvent e) {
-	    		 try {
-					createNewChatOption().show(leftBottomPane, e.getX(), e.getY());
-				 } catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				 }
+	    		 createProfileMenu().show(leftBottomPane, e.getX(), e.getY());
 	    	 }
 
 			 
@@ -281,8 +276,6 @@ public class GUI {
 		 
 		 mainFrame.add(rightPanel, BorderLayout.CENTER);
 	 }
-	 
-	 
 	 
 	 
 	 
@@ -454,6 +447,59 @@ public class GUI {
 
 		 
 	 }
+	 
+	 private void handleCreatePrivateChat() {
+		 
+		 String userId = JOptionPane.showInputDialog(mainFrame, "Enter a user ID", "Create New Private chat", JOptionPane.PLAIN_MESSAGE);
+		 System.out.println("Entered userId: " + userId);
+	 }
+	 
+	 private void handleCreateGroupChat() {
+		 String groupName = JOptionPane.showInputDialog(mainFrame, "Enter a group name", "Create New Groupchat", JOptionPane.PLAIN_MESSAGE);
+		 
+		 
+
+		 if (groupName == null) return;
+
+		 int value;
+
+		 while (true) {
+		     String numMembers = JOptionPane.showInputDialog(
+		         mainFrame,
+		         "How many members will you be adding?",
+		         "Create New Groupchat",
+		         JOptionPane.PLAIN_MESSAGE
+		     );
+
+		     if (numMembers == null) return;
+
+		     try {
+		         value = Integer.parseInt(numMembers.trim());
+		         break;
+		     } catch (NumberFormatException e) {
+		         JOptionPane.showMessageDialog(mainFrame, "Please enter a valid integer.");
+		     }
+		 }
+		//validat input
+		 String[] members = new String[value];
+		 for (int i = 0; i < value; i++) {
+			 members[i] = JOptionPane.showInputDialog(mainFrame, "Enter a group name", "Create New Groupchat", JOptionPane.PLAIN_MESSAGE);
+			 if(members[i]== null ) {
+				 return;
+			 }
+			 
+		 }
+		 
+		 
+		 System.out.println(groupName);
+		 
+		 
+	 }
+	 
+	 private void HandleSendMessage() {
+		 
+	 }
+	 
 	 
 	 // SubType.LOGOUT
 	 private void logoutUser() throws ClassNotFoundException, IOException {
