@@ -354,10 +354,16 @@ public class GUI {
 		 }
 		 panel1.revalidate();
 		 panel1.repaint();
-		 SwingUtilities.invokeLater(() -> {
-			 JScrollBar scroll = msgScrollPane.getVerticalScrollBar();
-		 	 scroll.setValue(scroll.getMaximum());
-		 });
+		 scrollToBottom();
+		 
+	}
+
+	private void scrollToBottom(){
+		if (msgScrollPane == null){
+			return;
+		}
+		JScrollBar verticalBar = msgScrollPane.getVerticalScrollBar();
+		verticalBar.setValue(verticalBar.getMaximum());
 	}
 	
 	 private JPopupMenu createProfileMenu() {

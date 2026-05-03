@@ -61,6 +61,14 @@ public class Chat implements Serializable {
 
 	// inserts a message at the end of the message array
 	public void addMessage(TextMessage message) {
+
+		if(message == null){
+			return;
+		}
+
+		if (message.getText() == null || message.getText().trim().length() == 0){
+			return;
+		}
 		synchronized (mutexObject) {
 			if (messages.length == 0) {
 				messages = new TextMessage[50];
