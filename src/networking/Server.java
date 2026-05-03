@@ -188,6 +188,7 @@ public class Server {
 			newChat = chats.getCopyOfChat(chatId);
 			messageToSend = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, newChat);
 			sendToClients(messageToSend, chatUsers);
+			System.out.println("Successfully created new chat");
 			return;
 		}
 		messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ACTUAL_CHAT, Status.FAILED);

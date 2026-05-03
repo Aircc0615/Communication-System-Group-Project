@@ -22,6 +22,7 @@ public class Client {
 	private static User user;
 	private static User selectedAuditUser;
 	private static GUI gui;
+	private static Thread serverListener;
 	
 	
 		public void assignGUI(GUI gui) {
@@ -69,7 +70,7 @@ public class Client {
 	}
 
 	public void createServerListener() {
-    Thread serverListener = new Thread(new Runnable() {
+    serverListener = new Thread(new Runnable() {
        public void run() {
         	try {
 						listenForServerMessages();
@@ -78,6 +79,7 @@ public class Client {
 					}
        }
     });
+    serverListener.start();
 	}
 	
 	// Allows client to listen for incoming messages
