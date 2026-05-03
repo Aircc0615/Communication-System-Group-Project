@@ -42,15 +42,17 @@ public class ClientHandler implements Runnable{
             	
             	if (message.mainType == MainType.AUTHENTICATION) { //if its a login
             			if(message.subType == SubType.CREATE_USER) {
-            				User newUser = performCreateNewUserOperation(message);
-            				break;
+            				performCreateNewUserOperation(message);
+            				System.out.println("Updating users. Here are all the users on the server: ");
+            				server.printAllUsers();
             			}
-                User authenticatedUser = performLoginOperation(message); //returns true if its a valid user/false if not
-
-                if (authenticatedUser != null) {
-                	break; //if they're a valid user they can go ahead and send messages
-                }
-                System.err.println("Invalid User");
+            			else if(message.subType == SubType.LOGIN) {
+            				User authenticatedUser = performLoginOperation(message); //returns true if its a valid user/false if not
+			                if (authenticatedUser != null) {
+			                	break; //if they're a valid user they can go ahead and send messages
+			                }
+			                System.err.println("Invalid User");
+            			}
             	}
             }
             while (true) {
@@ -77,10 +79,7 @@ public class ClientHandler implements Runnable{
     
     public User performLoginOperation(Message message) throws IOException {
         //if the login is successful we perform the next step, otherwise we send a failed response
-        if(message.subType == SubType.LOGIN) {
-        	return server.authenticateUser(message.getUser(), this);
-        }
-      return null;
+        return server.authenticateUser(message.getUser(), this);
     }
   
     public User performCreateNewUserOperation(Message message) throws IOException {
