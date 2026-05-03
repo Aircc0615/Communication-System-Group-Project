@@ -33,12 +33,12 @@ public class Server {
     
     //used to test GUI
     public void createTestUsers() {
-    	User user1 = new User("user1", "pw");
-    	User user2 = new User("user2", "pw");
-    	User user3 = new User("user3", "pw");
-    	User user4 = new User("user4", "pw");
-    	User user5 = new User("user5", "pw");
-    	User user6 = new User("user6", "pw");
+    	User user1 = new User("1", "1");
+    	User user2 = new User("2", "2");
+    	User user3 = new User("3", "3");
+    	User user4 = new User("4", "4");
+    	User user5 = new User("5", "5");
+    	User user6 = new User("6", "6");
     	
     	users.add(user1);
     	users.add(user2);
