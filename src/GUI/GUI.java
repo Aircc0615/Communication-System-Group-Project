@@ -9,6 +9,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 import javax.swing.*;
 
@@ -29,33 +31,30 @@ public class GUI {
 	JTextArea textArea;
 	JPanel panel1;
 	
-	public GUI(User user, Client client)
-	 {
+	public GUI(Client client) throws UnknownHostException, IOException{
 		 buildGUI();
-		 this.user = user;
 		 this.client = client;
 	 }
 	
-	 public void buildGUI() {
-		 
+	 public void buildGUI() throws UnknownHostException, IOException {
 		 createLoginFrame();
-		 
 	 }
 	 
-	 public void createLoginFrame() {
+	 public void createLoginFrame() throws UnknownHostException, IOException {
 		 loginFrame = new JFrame();
 		 
 		 //set frame size
 		 loginFrame.setSize(450, 700);
 		 loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		 
-		 createUserNPassFrame();
+		 createLoginForm();
 		 
 		 //make frame visible
 		 loginFrame.setVisible(true);
 		 
 	 }
-	 public void createUserNPassFrame() {
+	 public void createLoginForm() throws UnknownHostException, IOException {
+		 client.connectToServer(); //as soon as the application runs we connect to the server
 		 
 		 JLabel userLabel = new JLabel("Username");
 		 JTextField usernameField = new JTextField(16);
@@ -72,9 +71,14 @@ public class GUI {
 		 submitB.addActionListener(e -> {
 			    String username = usernameField.getText();
 			    String password = new String(passwordField.getPassword());
-
+			    user = new User(username, password);
 			    //System.out.println(username + "\n"+ password);
-			    verifyLogin(username, password);
+			    try {
+					login();
+					
+				} catch (ClassNotFoundException | IOException e1) {
+					e1.printStackTrace();
+				}
 			});
 		 
 		 //layout
@@ -98,28 +102,7 @@ public class GUI {
 	     loginFrame.add(centerPanel, BorderLayout.CENTER);
 		 
 	 }
-	 public void verifyLogin(String username, String password) {
-		 System.out.println("verifying");
-		 
-		 /*
-		 User tempUser = new User(username, password);
-		 
-		 User user = client.login(tempUser);
-		 
-		 isLogged = client.login(user, .....);
-		 isLogged = user.authenticateLogin(username, password);
-		 System.out.println(isLogged);
-		 System.out.println(username + "\n"+ password);
-		 
-		 if(!isLogged) {
-			 JOptionPane.showMessageDialog(loginFrame, "Login failed");
-			 return;
-		 }
-		 */
-		 loginFrame.dispose();
-		 createMainFrame();
-		 
-	 }
+	
 	 
 	 public void createMainFrame() {
 		 mainFrame = new JFrame();
@@ -162,7 +145,12 @@ public class GUI {
 		 
 		 newChatLabel.addMouseListener(new MouseAdapter() {
 			 public void mouseClicked(MouseEvent e) {
-				 createNewChatOption().show(addChatPanel, e.getX(), e.getY());
+				 try {
+					createNewChatOption().show(addChatPanel, e.getX(), e.getY());
+				 } catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				 }
 			    }
 		 });
 		 
@@ -184,8 +172,8 @@ public class GUI {
 		 chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
 		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
 		 
-		 for (int i = 0; i < user.getChatList().getNumChat(); i++) {
-			    Chat chat = user.getChatList().getChat(i);
+		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
+			    Chat chat = user.getChatList().getCopyOfChat(i);
 			    //final Chat currentChat = chat;
 
 			    JButton chatButton = new JButton("Chat " + i);
@@ -233,7 +221,12 @@ public class GUI {
 
 	     leftBottomPane.addMouseListener(new MouseAdapter() {
 	    	 public void mouseClicked(MouseEvent e) {
-	    		 createNewChatOption().show(leftBottomPane, e.getX(), e.getY());
+	    		 try {
+					createNewChatOption().show(leftBottomPane, e.getX(), e.getY());
+				 } catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				 }
 	    	 }
 
 			 
@@ -362,7 +355,12 @@ public class GUI {
 		
 		logout.addActionListener(e -> {
 			auditMode = false;
-			logoutUser();
+			try {
+				logoutUser();
+			} catch (ClassNotFoundException | IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		
 		});
 		
@@ -381,43 +379,137 @@ public class GUI {
 		
 		return profile;
 	}
-	 private JPopupMenu createNewChatOption() {
+	 private JPopupMenu createNewChatOption() throws IOException {
 		 JPopupMenu chatOption = new JPopupMenu();
+		 JMenuItem CreateChat = new JMenuItem("Create new chat!");
 		 
-		 JMenuItem privateChat = new JMenuItem("Private");
-		 JMenuItem groupChat = new JMenuItem("Group Chat");
+		 CreateChat.addActionListener(e -> {
+			 //input popup that allows user to input who to send to
+			 String usernames = JOptionPane.showInputDialog(e, "Enter usernames serparated by commas: "); //whatever the user inputs needs to be stored here
+			 if(usernames != null) {
+				 try {
+					handleCreateChat(usernames);
+				 } catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				 }
+			 }
+		});
 		 
-		 privateChat.addActionListener(e -> {
-				handleCreateGroupChat();
-			});
-		 
-		 groupChat.addActionListener(e -> {
-			 handleCreatePrivateChat();
-			});
-		 
-		 chatOption.add(privateChat);
-		 chatOption.add(groupChat);
+		 chatOption.add(CreateChat);
 		 
 		 return chatOption;
+	 }
+	 
+	 private void reloadChatList() {
 		 
 	 }
 	 
+	 // CLIENT OPERATIONS
 	 
-	 
-	 private void logoutUser() {
-		 //to do
-	 }
-	 
-	 private void reloadChatList();
-	 
-	 private void handleCreatePrivateChat() {
+    // MESSAGE: MainType.AUTHENTICATION
+    // SubType.LOGIN
+	 public void login() throws ClassNotFoundException, IOException { 
+		 User authenticatedUser = client.login(user); //client will send login message to server
+		 
+		 if(authenticatedUser != null) { // server returns a response either a null value or user
+			 this.user = authenticatedUser;
+			 loginFrame.dispose();
+			 createMainFrame();
+		 }
+		 else {
+			 JOptionPane.showMessageDialog(loginFrame, "Login failed! Invalid username/password.");
+		 }
+		 
+		 /*
+		 User tempUser = new User(username, password);
+		 
+		 User user = client.login(tempUser);
+		 
+		 isLogged = client.login(user, .....);
+		 isLogged = user.authenticateLogin(username, password);
+		 System.out.println(isLogged);
+		 System.out.println(username + "\n"+ password);
+		 
+		 if(!isLogged) {
+			 JOptionPane.showMessageDialog(loginFrame, "Login failed");
+			 return;
+		 }
+		 */
+
 		 
 	 }
 	 
-	 private void handleCreateGroupChat();
+	 // SubType.LOGOUT
+	 private void logoutUser() throws ClassNotFoundException, IOException {
+		 client.logout();
+	 }
+	 	 
+	 // MESSAGE: MainType.TEXT
+	 // SubType.SEND_TEXT_MESSAGE
+	 //GUI needs a way to know which chat were referencing. 
+	 private void handleSendMessage(String messageToSend) throws IOException {
+		 client.sendMessage(messageToSend, 0); //user should not have to pass the chatID, this needs to be done for the user
+	 }
 	 
-	 private void HandleSendMessage();
+	 // MESSAGE: MainType.DISPLAY
+	 // SubType.ACTUAL_CHAT
+	 private void getActualChat() throws ClassNotFoundException, IOException{
+		 // TO-DO: needs implementation on client side
+		 client.requestActualChat();
+	 }
 	 
+	 // SubType.USER_STATE
+	 private void getUserState() throws ClassNotFoundException, IOException {
+		 client.getUserState();
+	 }
 	 
 	
+	 // user will pass usernames, server takes care of converting single string to array
+	 // example argument for function: John, Henry, Kevin, Kayla, Jennifer, Michael
+	 // user can also pass single name, example: John
+	 // server takes care of constructing group chat or private chat
+	 
+	 // MESSAGE: MainType.CHAT_OPERATIONs
+	 // CREATE_GC 	||       this will work for making either a DM or GC	 
+	 private void handleCreateChat(String usernames) throws IOException {
+		 client.createChat(usernames); 
+	 }
+	
+	// SubType.ADD_USER_TO_GC
+	private void addUserToChat(String username) throws IOException {
+		 client.addUserToChat(username);
+	 }
+	 
+	// SubType.REMOVE_USER_FROM_GC
+	 private void removeUserFromChat(String username) throws IOException {
+		 client.removeUserFromChat(username);
+	 }
+	 
+	// SubType.DELETE_GC
+	 private void deleteGroupChat(String chatID) throws IOException { //the GUI needs to handle retrieve the chatID
+		 client.DeleteChat(chatID);
+	 }
+		
+	// MESSAGE: MainType.AUDIT_OPERATION
+	// SubType.ENTER_AUDIT_MODE
+	 private void enterAuditMode() throws IOException {
+		 client.enterAuditMode();
+	 }
+	 
+	 // SubType.SELECT_USER
+	 private void audit_SelectUser(String username) throws IOException{
+		 client.audit_SelectUser(username); 
+	 }
+	 
+	 // SubType.VIEW_CHATS
+	 private void audit_ViewChats() throws IOException {
+		client.audit_ViewChats();
+	}
+	
+	 // SubType.EXPORT_CHAT_LOG
+	 private void audit_ExportChatLog() throws IOException {
+		client.audit_ExportChatLog();
+	 }
+	 
 }

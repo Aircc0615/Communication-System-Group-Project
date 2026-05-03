@@ -1,11 +1,12 @@
 package chat;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 
 
 //might need to add a semaphore for addchat/deletechat synchronization
-public class ChatList {
+public class ChatList implements Serializable{
 	private Chat[] chats;
 	private int numChats;
 	private Object writeMutex;

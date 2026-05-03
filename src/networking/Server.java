@@ -27,7 +27,32 @@ public class Server {
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {
     	Server server = new Server();
+    	server.createTestUsers();
     	server.startServer();
+    }
+    
+    //used to test GUI
+    public void createTestUsers() {
+    	User user1 = new User("user1", "pw");
+    	User user2 = new User("user2", "pw");
+    	User user3 = new User("user3", "pw");
+    	User user4 = new User("user4", "pw");
+    	User user5 = new User("user5", "pw");
+    	User user6 = new User("user6", "pw");
+    	
+    	users.add(user1);
+    	users.add(user2);
+    	users.add(user3);
+    	users.add(user4);
+    	users.add(user5);
+    	users.add(user6);
+    	
+    	usernameToUser.put(user1.getUsername(), user1);
+    	usernameToUser.put(user2.getUsername(), user2);
+    	usernameToUser.put(user3.getUsername(), user3);
+    	usernameToUser.put(user4.getUsername(), user4);
+    	usernameToUser.put(user5.getUsername(), user5);
+    	usernameToUser.put(user6.getUsername(), user6);
     }
     
     public void startServer() {
