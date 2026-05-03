@@ -216,9 +216,12 @@ public class Server {
 	}
     
 	// SubType.SELECT_USER
-    public void handleAuditSelectUser(Message message, ClientHandler clientHandler) {
-		// TODO Auto-generated method stub
-		
+    public void handleAuditSelectUser(Message message, ClientHandler clientHandler) throws IOException {
+		String username = message.getText();
+		String fromUsername = message.getUsername();
+		User user = usernameToUser.get(username);
+		Message response = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER, Status.SUCCESS, username, user);
+		sendToClient(response, fromUsername);
 	}
     
     // SubType.VIEW_CHATS

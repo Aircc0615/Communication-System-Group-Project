@@ -19,6 +19,7 @@ public class Client {
 	static List<Message> messageHistory = new ArrayList<>(); //client side message history
 	static Scanner sin = new Scanner(System.in);
 	private static User user;
+	private static User selectedAuditUser;
 	
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {    	
