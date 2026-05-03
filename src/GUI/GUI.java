@@ -243,7 +243,7 @@ public class GUI {
 		 topRightPanel.setPreferredSize(new Dimension(500, 50));
 		 
 		 //middle
-		 JScrollPane msgScrollPane = new JScrollPane();
+		 msgScrollPane = new JScrollPane();
 		 msgScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		 msgScrollPane.setPreferredSize(new Dimension(10, 700));
 		 
@@ -291,7 +291,6 @@ public class GUI {
 		 panel1.removeAll();
 		 currentChatId = chatId;
 		 Chat chat = user.getCopyOfChat(chatId);
-		 System.out.println("messages in chat: " + chat.getNumMessages());
 		 for(int i = 0; i< chat.getNumMessages(); i++) {
 			 
 			 JPanel msgPanel = new JPanel(new BorderLayout());
@@ -322,7 +321,10 @@ public class GUI {
 		 }
 		 panel1.revalidate();
 		 panel1.repaint();
-		 
+		 SwingUtilities.invokeLater(() -> {
+			 JScrollBar scroll = msgScrollPane.getVerticalScrollBar();
+		 	 scroll.setValue(scroll.getMaximum());
+		 });
 	}
 	
 	 private JPopupMenu createProfileMenu() {
@@ -397,8 +399,7 @@ public class GUI {
 		 if(chatListPanel == null) {
 		 		chatListPanel = new JPanel();
 		 		chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
-		 		System.out.println("First load of chat list");
-		 } else {System.out.println("Reloading chat list due to update");}
+		 }
 		 chatListPanel.removeAll();
 		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
 		 
