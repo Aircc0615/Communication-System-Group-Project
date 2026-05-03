@@ -4,7 +4,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import chat.Chat;
 import chat.ChatList;
@@ -164,7 +166,7 @@ public class Server {
 	public void handleCreateChat(Message message, ClientHandler clientHandler) throws IOException {
 		String usersToBeAddedToChat = message.getUsername() + ", "+ message.getText();
 		String[] memberUsernames = usersToBeAddedToChat.split(","); //the usernames will be passed as a single string so we split
-		List<String> validUsers = new ArrayList<>();
+		Set<String> validUsers = new HashSet<>();
 		
 		
 		for(int i = 0; i < memberUsernames.length; i++) {

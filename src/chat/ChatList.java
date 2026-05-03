@@ -21,6 +21,7 @@ public class ChatList implements Serializable{
 	// inserts a chat in the array based on the order of the timestamp
 	public void addChat(Chat chat) {
 		synchronized (writeMutex) {
+			chat.addThreadSafety();
 			int chatId = chat.getChatId();
 			Chat[] tempChats = getCopyOfChats();
 			int chatIndex = parseId(tempChats, chatId);
@@ -285,8 +286,11 @@ public class ChatList implements Serializable{
 		if(writeMutex == null)
 			writeMutex = new Object();
 		Chat[] tempChats = chats;
-		for(Chat chat : tempChats)
-			if(chat != null)
+		for(Chat chat : tempChats) {
+			if(chat != null) {
 				chat.addThreadSafety();
+				System.out.println("Adding thread safety to chat: " + chat.getChatId());
+			}
+		}
 	}
 }
