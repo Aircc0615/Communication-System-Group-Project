@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.SwingUtilities;
+
 import GUI.GUI;
 import chat.Chat;
 import chat.TextMessage;
@@ -124,8 +126,17 @@ public class Client {
 	        			if(msg.getStatus() != Status.SUCCESS)
 	        				break;
 	        			selectedAuditUser = msg.getUser();
-	        			selectedAuditUser.addChatThreadSafety();
-	        			gui.setNewAuditUser(selectedAuditUser);
+	        			if (selectedAuditUser == null) {
+	        		        System.out.println("Selected audit user is null");
+	        		        break;
+	        		    }
+
+	        		    selectedAuditUser.addChatThreadSafety();
+
+	        		    SwingUtilities.invokeLater(() -> {
+	        		        gui.setNewAuditUser(selectedAuditUser);
+	        		        gui.reloadChatList(selectedAuditUser);
+	        		    });
 	        			break;
 	        		case SubType.REMOVE_USER_FROM_GC: 
 	        			//add it user logic for updating gc users
