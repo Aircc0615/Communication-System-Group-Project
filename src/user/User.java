@@ -434,4 +434,20 @@ public class User implements Serializable {
 		chatList.addThreadSafety();
 		unreadChatList.addThreadSafety();
 	}
+
+	public int getChatNumMessages(int chatId) {
+		return chatList.getNumChatMessages(chatId);
+	}
+
+	public TextMessage getChatTextMessage(int chatId, int messageIndex) {
+		return chatList.getChatMessage(chatId, messageIndex);
+	}
+
+	public int[] getChatIds() {
+		return chatList.getChatIds();
+	}
+
+	public Chat getCopyOfChat(int chatId) {
+		return chatList.getCopyOfChat(chatId);
+	}
 }

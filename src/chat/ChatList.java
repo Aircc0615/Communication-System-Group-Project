@@ -21,6 +21,7 @@ public class ChatList implements Serializable{
 	// inserts a chat in the array based on the order of the timestamp
 	public void addChat(Chat chat) {
 		synchronized (writeMutex) {
+			chat.addThreadSafety();
 			int chatId = chat.getChatId();
 			Chat[] tempChats = getCopyOfChats();
 			int chatIndex = parseId(tempChats, chatId);
@@ -256,31 +257,40 @@ public class ChatList implements Serializable{
 		int chatIndex = parseId(tempChats, chatId);
 		if(chatIndex == -1)
 			throw new IndexOutOfBoundsException();
-		return tempChats[chatId].getNumMembers();
+		return tempChats[chatIndex].getNumMembers();
 	}
 	public int getNumChatMessages(int chatId) {
 		Chat[] tempChats = chats;
 		int chatIndex = parseId(tempChats, chatId);
 		if(chatIndex == -1)
 			throw new IndexOutOfBoundsException();
-		return tempChats[chatId].getNumMessages();
+		return tempChats[chatIndex].getNumMessages();
 	}
 	public Chat getCopyOfChat(int chatId) {
 		Chat[] tempChats = chats;
-		return tempChats[chatId].getCopy();
+		int chatIndex = parseId(tempChats, chatId);
+		if(chatIndex == -1)
+			throw new IndexOutOfBoundsException();
+		return tempChats[chatIndex].getCopy();
 	}
 
 	public String[] getChatMembers(int chatId) {
 		Chat[] tempChats = chats;
-		return tempChats[chatId].getMembersInChat();
+		int chatIndex = parseId(tempChats, chatId);
+		if(chatIndex == -1)
+			throw new IndexOutOfBoundsException();
+		return tempChats[chatIndex].getMembersInChat();
 	}
 
 	public void addThreadSafety() {
 		if(writeMutex == null)
 			writeMutex = new Object();
 		Chat[] tempChats = chats;
-		for(Chat chat : tempChats)
-			if(chat != null)
+		for(Chat chat : tempChats) {
+			if(chat != null) {
 				chat.addThreadSafety();
+				System.out.println("Adding thread safety to chat: " + chat.getChatId());
+			}
+		}
 	}
 }

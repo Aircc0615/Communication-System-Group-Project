@@ -4,7 +4,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import chat.Chat;
 import chat.ChatList;
@@ -16,7 +18,7 @@ import user.UserLoginModule;
 public class Server {
 	private List<User> users = new ArrayList<>();
 	private int numUsers;
-	private ChatList chats;
+	private ChatList chats = new ChatList();
 	private List<User> onlineUsers = new ArrayList<>();
 	private int numOnlineUsers;
 	private static List<ClientHandler> currentClients = new ArrayList<>();
@@ -33,12 +35,12 @@ public class Server {
     
     //used to test GUI
     public void createTestUsers() {
-    	User user1 = new User("user1", "pw");
-    	User user2 = new User("user2", "pw");
-    	User user3 = new User("user3", "pw");
-    	User user4 = new User("user4", "pw");
-    	User user5 = new User("user5", "pw");
-    	User user6 = new User("user6", "pw");
+    	User user1 = new User("1", "1", true);
+    	User user2 = new User("2", "2");
+    	User user3 = new User("3", "3");
+    	User user4 = new User("4", "4");
+    	User user5 = new User("5", "5");
+    	User user6 = new User("6", "6");
     	
     	users.add(user1);
     	users.add(user2);
@@ -84,11 +86,15 @@ public class Server {
     public User authenticateUser(User userToAuthenticate, ClientHandler handler) throws IOException {
     	System.out.println("Authenticating User");
     	User user = userLoginModule.authenticateUser(userToAuthenticate);
+    	Message authenticationResponse;
     	if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
     		System.out.println("Successful");
-    		Message authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
+    		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
     		sendToClient(authenticationResponse, user.getUsername());
+    	} else {
+    		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.FAILED);
+    		handler.sendToClient(authenticationResponse);
     	}
     	return user;
     }
@@ -115,8 +121,12 @@ public class Server {
 
     public void sendToClients(Message message, String[] usernames) throws IOException {
     	for(String username : usernames) {
-    		ClientHandler client = mapUsernameToClient.get(username);
-    		client.sendToClient(message);
+    		if(mapUsernameToClient.containsKey(username)) {
+    			ClientHandler client = mapUsernameToClient.get(username);
+    			client.sendToClient(message);
+    		} else {
+    			//add unread buffer logic here
+    		}
     	}
     }
 
@@ -129,17 +139,23 @@ public class Server {
 	// SubType.SEND_TEXT_MESSAGE 
     public void handleSendText(String text, String username, int chatId) throws IOException {
 		User user = usernameToUser.get(username);
+		if(text.isBlank()) {
+			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, "Empty Text");
+			sendToClient(failedText, username);
+			return;
+		}
 		TextMessage txtMsg = new TextMessage(text, username, user.getId());
 		try {
 			chats.addChatMessage(chatId, txtMsg);
 		} catch (IndexOutOfBoundsException e) {
 			System.err.println("Invalid Chat Id of " + chatId + " detected from user: " + username);
 			
-			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, txtMsg, chatId);
+			Message failedText = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE, Status.FAILED, txtMsg.getText());
 			sendToClient(failedText, username);
 			return;
 		}
 		String[] usernames = chats.getChatMembers(chatId);
+		for(int i = 0; i < usernames.length; i++)
 		
 		for(String name : usernames) {
 			User otherUser = usernameToUser.get(name);
@@ -155,7 +171,7 @@ public class Server {
 	public void handleCreateChat(Message message, ClientHandler clientHandler) throws IOException {
 		String usersToBeAddedToChat = message.getUsername() + ", "+ message.getText();
 		String[] memberUsernames = usersToBeAddedToChat.split(","); //the usernames will be passed as a single string so we split
-		List<String> validUsers = new ArrayList<>();
+		Set<String> validUsers = new HashSet<>();
 		
 		
 		for(int i = 0; i < memberUsernames.length; i++) {
@@ -168,11 +184,12 @@ public class Server {
 		String[] chatUsers = validUsers.toArray(new String[0]);
 		Message messageToSend;
 		if(chatUsers.length >= 2) {
-			Chat newChat = null;
-			if(chatUsers.length == 2)
-				newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.PRIVATE);
-			else
-				newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.GROUP);
+			Chat newChat;
+			if(chatUsers.length == 2) {
+				newChat = new Chat(message.getUsername(), chatUsers, ChatType.PRIVATE);
+			} else {
+				newChat = new Chat(message.getUsername(), chatUsers, ChatType.GROUP);
+			}
 			int chatId = newChat.getChatId();
 			chats.addChat(newChat);
 		
@@ -181,13 +198,14 @@ public class Server {
 				user.addChat(newChat);
 			}
 			newChat = chats.getCopyOfChat(chatId);
-			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ACTUAL_CHAT, Status.SUCCESS, newChat);
+			messageToSend = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, newChat);
 			sendToClients(messageToSend, chatUsers);
+			System.out.println("Successfully created new chat");
 			return;
 		}
 		messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ACTUAL_CHAT, Status.FAILED);
 		//need to send response to client
-		sendToClient(messageToSend, message.getUser().getUsername());
+		sendToClient(messageToSend, message.getUsername());
 	}
 	
 	// SubType.ADD_USER_TO_GC

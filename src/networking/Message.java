@@ -162,5 +162,7 @@ public class Message implements Serializable { //serialize takes the object and 
     public boolean getSuccess() { return success; }
 
     public int getUserId() { return userId; }
+
+    public Chat getChat() { return chat; } 
     
 }

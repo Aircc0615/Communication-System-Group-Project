@@ -28,9 +28,9 @@ public class Chat implements Serializable {
 		this.memberUsernames = new String[numMembers];
 		int index = 0;
 		if(!creatorInUsernames)
-			memberUsernames[index++] = creatorUsername;
+			this.memberUsernames[index++] = creatorUsername;
 		for(String name : memberUsernames)
-			memberUsernames[index++] = name;
+			this.memberUsernames[index++] = name;
 		
 		//
 		this.creatorUsername = creatorUsername;
@@ -70,7 +70,9 @@ public class Chat implements Serializable {
 			return;
 		}
 		synchronized (mutexObject) {
-			if (numMessages >= messages.length) { // makes space if need be (2x)
+			if (messages.length == 0) {
+				messages = new TextMessage[50];
+			} else if (numMessages >= messages.length) { // makes space if need be (2x)
 				TextMessage[] newMessages = new TextMessage[messages.length * 2];
 				for (int i = 0; i < messages.length; i++) {
 					newMessages[i] = messages[i];

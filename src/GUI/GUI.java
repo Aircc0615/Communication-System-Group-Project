@@ -27,14 +27,17 @@ public class GUI {
 	boolean auditMode = false;
 	User user;
 	Client client;
+	private int currentChatId;
 	JScrollPane msgScrollPane; 
 	JTextArea textArea;
 	JPanel panel1;
+	private JPanel chatListPanel;
 	
 	public GUI(Client client) throws UnknownHostException, IOException{
 		 buildGUI();
 		 this.client = client;
 		 client.assignGUI(this);
+		 currentChatId = -1;
 	 }
 	
 	 public void buildGUI() throws UnknownHostException, IOException {
@@ -132,60 +135,67 @@ public class GUI {
 		 addChatPanel.setPreferredSize(new Dimension(240, 50));
 		 addChatPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		 addChatPanel.setLayout(new BoxLayout( addChatPanel, BoxLayout.X_AXIS));
-		 
-		 
-		 
-		 JLabel newChatLabel = new JLabel("               Create New Chat" );
-		 
-		 
-		 newChatLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		 newChatLabel.setOpaque(true);  
-		 newChatLabel.setBackground(new Color(163, 177, 138));
-		 newChatLabel.setPreferredSize(new Dimension(240, 40));
-		 newChatLabel.setMaximumSize(newChatLabel.getPreferredSize());
-		 
-		 newChatLabel.addMouseListener(new MouseAdapter() {
-			 public void mouseClicked(MouseEvent e) {
-				 try {
-					createNewChatOption().show(addChatPanel, e.getX(), e.getY());
-				 } catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				 }
-			    }
-		 });
-		 
-		 
-		 
-		 addChatPanel.add(newChatLabel);
-		 
-		 
-		 
+		
+		
+		 if(auditMode == true) {
+			 JLabel selectUserLabel = new JLabel("               Select User" );
+			
+			 selectUserLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			 selectUserLabel.setOpaque(true); 
+			 selectUserLabel.setBackground(new Color(163, 177, 138));
+			 selectUserLabel.setPreferredSize(new Dimension(240, 40));
+			 selectUserLabel.setMaximumSize(selectUserLabel.getPreferredSize());
+			
+			 selectUserLabel.addMouseListener(new MouseAdapter() {
+			        public void mouseClicked(MouseEvent e) {
+			            String username = JOptionPane.showInputDialog(
+			                mainFrame,
+			                "Enter username:",
+			                "Select User",
+			                JOptionPane.PLAIN_MESSAGE
+			            );
+			            if (username != null && !username.trim().isEmpty()) {
+			                try {
+			                    audit_SelectUser(username.trim());
+			                } catch (IOException ex) {
+			                    ex.printStackTrace();
+			                }
+			            }
+			        }
+			    });
+			
+			 addChatPanel.add(selectUserLabel);
+		 }else {
+			 JLabel newChatLabel = new JLabel("               Create New Chat" );
+			 newChatLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			 newChatLabel.setOpaque(true); 
+			 newChatLabel.setBackground(new Color(163, 177, 138));
+			 newChatLabel.setPreferredSize(new Dimension(240, 40));
+			 newChatLabel.setMaximumSize(newChatLabel.getPreferredSize());
+			
+			 newChatLabel.addMouseListener(new MouseAdapter() {
+				 public void mouseClicked(MouseEvent e) {
+					 try {
+						createNewChatOption().show(addChatPanel, e.getX(), e.getY());
+					 } catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					 }
+				    }
+			 });
+			
+			 addChatPanel.add(newChatLabel);
+		 }
+		
+		
 		 
 		 //middle
-		 JScrollPane optionScrollPane = new JScrollPane();		//hold all the people user had message
-		 optionScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));	//for testing
+		 JScrollPane optionScrollPane = new JScrollPane();		
+		 optionScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));	
 		 optionScrollPane.setPreferredSize(new Dimension(240, 530));
 		 
 		 //display chatList
-		 
-		 JPanel chatListPanel = new JPanel();
-		 chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
-		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
-		 
-		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
-			    Chat chat = user.getChatList().getCopyOfChat(i);
-			    //final Chat currentChat = chat;
-
-			    JButton chatButton = new JButton("Chat " + i);
-			    chatButton.setMaximumSize(new Dimension(220, 40));
-
-			    chatButton.addActionListener(e -> {
-			    displayChat(chat);
-			    
-			    });
-			    chatListPanel.add(chatButton);
-			}
+		 reloadChatList();
 		 
 		 optionScrollPane.setViewportView(chatListPanel);
 		 
@@ -222,12 +232,7 @@ public class GUI {
 
 	     leftBottomPane.addMouseListener(new MouseAdapter() {
 	    	 public void mouseClicked(MouseEvent e) {
-	    		 try {
-					createNewChatOption().show(leftBottomPane, e.getX(), e.getY());
-				 } catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				 }
+	    		 createProfileMenu().show(leftBottomPane, e.getX(), e.getY());
 	    	 }
 
 			 
@@ -280,10 +285,27 @@ public class GUI {
 		 if(auditMode == true) {
 			 JButton exportButton = new JButton("Export");
 			 rightBottomPanel.add(exportButton);
+			 
+			 exportButton.addActionListener(e -> {
+				 try {
+					 audit_ExportChatLog();
+				 } catch (IOException e1) {
+					 e1.printStackTrace();
+				 }
+			 });
+			 
 			 System.out.println("enter audit mode");
 		 }else {
 			 JTextField inputField = new JTextField();
 			 JButton sendButton = new JButton("Send");
+			 sendButton.addActionListener(e -> {
+				 try {
+					handleSendMessage(inputField.getText());
+				 } catch (IOException e1) {
+					e1.printStackTrace();
+				 }
+				 inputField.setText("");
+			 });
 
 			 rightBottomPanel.add(inputField, BorderLayout.CENTER);
 			 rightBottomPanel.add(sendButton, BorderLayout.EAST);
@@ -298,11 +320,10 @@ public class GUI {
 	 
 	 
 	 
-	 
-	 
-	 public void displayChat(Chat chat) {
+	 public void displayChat(int chatId) {
 		 panel1.removeAll();
-		 
+		 currentChatId = chatId;
+		 Chat chat = user.getCopyOfChat(chatId);
 		 for(int i = 0; i< chat.getNumMessages(); i++) {
 			 
 			 JPanel msgPanel = new JPanel(new BorderLayout());
@@ -355,11 +376,13 @@ public class GUI {
 		//myProfile.addActionListener(e -> openProfilePage());
 		audit.addActionListener(e -> {
 			auditMode = true;
+			mainFrame.dispose();
 			createMainFrame();
 		});
 		
 		exitAudit.addActionListener(e -> {
 			auditMode = false;
+			mainFrame.dispose();
 			createMainFrame();
 		});
 		
@@ -367,6 +390,7 @@ public class GUI {
 			auditMode = false;
 			try {
 				logoutUser();
+				mainFrame.dispose();
 			} catch (ClassNotFoundException | IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -395,7 +419,7 @@ public class GUI {
 		 
 		 CreateChat.addActionListener(e -> {
 			 //input popup that allows user to input who to send to
-			 String usernames = JOptionPane.showInputDialog(e, "Enter usernames serparated by commas: "); //whatever the user inputs needs to be stored here
+			 String usernames = JOptionPane.showInputDialog(mainFrame, "Enter usernames serparated by commas: "); //whatever the user inputs needs to be stored here
 			 if(usernames != null) {
 				 try {
 					handleCreateChat(usernames);
@@ -411,8 +435,33 @@ public class GUI {
 		 return chatOption;
 	 }
 	 
-	 private void reloadChatList() {
+	 
+	 public void reloadChatList() {
+		 if(chatListPanel == null) {
+		 		chatListPanel = new JPanel();
+		 		chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
+		 }
+		 chatListPanel.removeAll();
+		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
 		 
+		 int[] chatIds = user.getChatIds();
+		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
+			    //final Chat currentChat = chat;
+			 		int chatId = chatIds[i];
+			    JButton chatButton = new JButton("Chat " + chatId);
+			    chatButton.setMaximumSize(new Dimension(220, 40));
+
+			    chatButton.addActionListener(e -> {
+			    displayChat(chatId);
+			    
+			    });
+			    chatListPanel.add(chatButton);
+		 }
+		 if(currentChatId != -1) {
+			 displayChat(currentChatId);
+		 }
+		 chatListPanel.revalidate();
+		 chatListPanel.repaint();
 	 }
 	 
 	 // CLIENT OPERATIONS
@@ -425,30 +474,18 @@ public class GUI {
 		 if(authenticatedUser != null) { // server returns a response either a null value or user
 			 this.user = authenticatedUser;
 			 loginFrame.dispose();
+			 client.createServerListener();
 			 createMainFrame();
 		 }
 		 else {
 			 JOptionPane.showMessageDialog(loginFrame, "Login failed! Invalid username/password.");
 		 }
-		 
-		 /*
-		 User tempUser = new User(username, password);
-		 
-		 User user = client.login(tempUser);
-		 
-		 isLogged = client.login(user, .....);
-		 isLogged = user.authenticateLogin(username, password);
-		 System.out.println(isLogged);
-		 System.out.println(username + "\n"+ password);
-		 
-		 if(!isLogged) {
-			 JOptionPane.showMessageDialog(loginFrame, "Login failed");
-			 return;
-		 }
-		 */
 
 		 
 	 }
+	 
+	 
+	 
 	 
 	 // SubType.LOGOUT
 	 private void logoutUser() throws ClassNotFoundException, IOException {
@@ -459,7 +496,9 @@ public class GUI {
 	 // SubType.SEND_TEXT_MESSAGE
 	 //GUI needs a way to know which chat were referencing. 
 	 private void handleSendMessage(String messageToSend) throws IOException {
-		 client.sendMessage(messageToSend, 0); //user should not have to pass the chatID, this needs to be done for the user
+		 if(currentChatId == -1)
+			 return;
+		 client.sendMessage(messageToSend, currentChatId); //user should not have to pass the chatID, this needs to be done for the user
 	 }
 	 
 	 // MESSAGE: MainType.DISPLAY

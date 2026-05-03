@@ -22,13 +22,14 @@ public class Client {
 	private static User user;
 	private static User selectedAuditUser;
 	private static GUI gui;
+	private static Thread serverListener;
 	
 	
 		public void assignGUI(GUI gui) {
 			this.gui = gui;
 		}
 	
-    public static void main(String[] args) throws IOException, ClassNotFoundException {    	
+    /*public static void main(String[] args) throws IOException, ClassNotFoundException {    	
     	clientSideSocket = connectToServer();
     	
         System.out.println("Please enter your username!");
@@ -40,13 +41,7 @@ public class Client {
         User authenticatedUser = login(user); //if the user we passed is authenticated it returns the same value otherwise it returns null
 
         if (authenticatedUser != null) {
-        	Thread serverListener = new Thread(new Runnable() {
-        		public void run() {
-        			try {
-						listenForServerMessages();
-					} catch (ClassNotFoundException | IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+        	user = authenticatedUser;
 					}     
         		}
     		});
@@ -58,7 +53,7 @@ public class Client {
             	sendMessage(text, 0); // currently chat id of 0 (!! Must change when integrating with GUI !!)
             }
         }
-    }
+    }*/
 	
     // Client Side Server Operations
 	// Allows Client to connect to server and returns the socket 
@@ -71,13 +66,36 @@ public class Client {
 
         outputStream = clientSideSocket.getOutputStream(); //output that were sending to server
         objectOutputStream = new ObjectOutputStream(outputStream); //deconstructing the object were sending, this serializes the object
+
+        serverInputStream = clientSideSocket.getInputStream(); //whatever is coming in from the server
+        objectInputStream = new ObjectInputStream(serverInputStream); // we need to reconstruct the message object
 		return clientSideSocket;
+	}
+
+	public void createServerListener() {
+    serverListener = new Thread(new Runnable() {
+       public void run() {
+        	try {
+						listenForServerMessages();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+       }
+    });
+    serverListener.start();
 	}
 	
 	// Allows client to listen for incoming messages
-	public static void listenForServerMessages() throws ClassNotFoundException, IOException {
+	public void listenForServerMessages() throws ClassNotFoundException, IOException {
+				System.out.println("Listening to server now");
         while(!clientSideSocket.isClosed()) {
         	Message msg = (Message) objectInputStream.readObject();
+        	if(msg.mainType == MainType.DISPLAY) {
+        		if(msg.subType == SubType.ACTUAL_CHAT) {
+        			user.addChat(msg.getChat());
+        			updateChatList();
+        		}
+        	} else if(msg.mainType == MainType.AUTHENTICATION) {
 	          if(msg.subType == SubType.LOGOUT) {
 	             System.out.println("Logging out!"); //after user logs out we can close the client side socket
 	             try {
@@ -86,16 +104,19 @@ public class Client {
 						// TODO Auto-generated catch block
 	            	 e.printStackTrace();
 	             }
-	          } else if(msg.subType == SubType.SEND_TEXT_MESSAGE) {
+	          }
+	        } else if (msg.mainType == MainType.TEXT) {
+	          if(msg.subType == SubType.SEND_TEXT_MESSAGE) {
 	            	if(msg.status == Status.FAILED) {
 	            		System.err.println("Failed message sent sent to " + msg.getChatId());
 	            	} else if (msg.status == Status.SUCCESS){
 	            		user.addMessageToChat(msg.getChatId(), msg.getTextMessage());
+	            		updateChatList();
 	            		//Put logic here to update gui view of chat/chatlist
 	            		//gui.updatechatlist(msg.getChatId()) <- will update the chat as well
 	            	}
 	            }
-	            else { 
+	        }else { 
 	            	if(msg.getUser() != null)
 	            		System.out.println("\n" + msg.getUser().getUsername() + ": " + msg.getText() + '\n'); //display message along with who its from
 	            	else {
@@ -116,7 +137,7 @@ public class Client {
 	
     // MESSAGE: MainType.AUTHENTICATION
     // SubType.LOGIN
-	public static User login(User user) throws IOException, ClassNotFoundException {
+	public User login(User user) throws IOException, ClassNotFoundException {
         System.out.println(user.getUsername() + " attempting to log in...");
         
         Message loginRequestMessage = new Message(MainType.AUTHENTICATION, SubType.LOGIN, Status.REQUEST, user.getUsername() + "requesting login", user); //login message created
@@ -124,17 +145,15 @@ public class Client {
         
         objectOutputStream.writeObject(loginRequestMessage); //sending the login message to server
         
-        serverInputStream = clientSideSocket.getInputStream(); //whatever is coming in from the server
-        objectInputStream = new ObjectInputStream(serverInputStream); // we need to reconstruct the message object
         
         Message incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
         updateMessageHistory(incomingLoginResponse);
-        
         if(incomingLoginResponse.status == Status.SUCCESS && incomingLoginResponse.subType == SubType.LOGIN_RESPONSE) {
             System.out.println(incomingLoginResponse.getText() + "\n");
             //System.out.println("Enter text to send!\n");
             User actualUser = incomingLoginResponse.getUser();
             actualUser.addChatThreadSafety();
+            this.user = actualUser;
             return actualUser;
         }
         else {
@@ -155,7 +174,7 @@ public class Client {
 	// MESSAGE: MainType.TEXT
 	// SubType.SEND_TEXT_MESSAGE
 	public static void sendMessage(String text, int chatId) throws IOException {
-	    Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, text, user, chatId);
+	    Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, text, user.getUsername(), chatId);
 	    updateMessageHistory(message); //the message the user input should be sent
 	    sendToServer(message); //where the object gets serialized and sent     
 	}
@@ -247,5 +266,9 @@ public class Client {
 		updateMessageHistory(exportLogRequest); //store operation in history
 		sendToServer(exportLogRequest);
 	}
-
+	
+	private void updateChatList() {
+     user.addChatThreadSafety();
+     gui.reloadChatList();
+	}
 }
