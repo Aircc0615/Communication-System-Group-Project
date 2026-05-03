@@ -172,7 +172,7 @@ public class Client {
 	}
 	
 	public void createNewAccount(User user) throws IOException {
-		Message createAccountRequest = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.REQUEST, user.getUsername() + "attempting to create account...\n", user);
+		Message createAccountRequest = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.REQUEST, user.getUsername() + "attempting to create account...\n", user);
 		updateMessageHistory(createAccountRequest); //store operation in history
 		sendToServer(createAccountRequest);
 	}

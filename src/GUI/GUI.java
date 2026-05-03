@@ -98,7 +98,14 @@ public class GUI {
 			    //System.out.println(username + "\n"+ password);
 			    try {
 					client.createNewAccount(user);
-					System.out.print("sucess");
+					JOptionPane.showMessageDialog(
+					        loginFrame,
+					        "Account created successfully!",
+					        "Account Created",
+					        JOptionPane.INFORMATION_MESSAGE
+					    );
+					loginFrame.dispose();
+					createLoginFrame();
 					
 				} catch (IOException e1) {
 					e1.printStackTrace();
