@@ -108,6 +108,7 @@ public class Client {
 	            		System.err.println("Failed message sent sent to " + msg.getChatId());
 	            	} else if (msg.status == Status.SUCCESS){
 	            		user.addMessageToChat(msg.getChatId(), msg.getTextMessage());
+	            		updateChatList();
 	            		//Put logic here to update gui view of chat/chatlist
 	            		//gui.updatechatlist(msg.getChatId()) <- will update the chat as well
 	            	}
