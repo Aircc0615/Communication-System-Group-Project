@@ -200,7 +200,7 @@ public class GUI {
 		 optionScrollPane.setPreferredSize(new Dimension(240, 530));
 		 
 		 //display chatList
-		 reloadChatList();
+		 reloadChatList(user);
 		 
 		 optionScrollPane.setViewportView(chatListPanel);
 		 
@@ -341,7 +341,7 @@ public class GUI {
 			            panel1.revalidate();
 			            panel1.repaint();
 
-			            reloadChatList();
+			            reloadChatList(user);
 			            
 			            JOptionPane.showMessageDialog(mainFrame, "Chat deleted.");
 
@@ -472,6 +472,7 @@ public class GUI {
 		
 		exitAudit.addActionListener(e -> {
 			auditMode = false;
+			user = client.getUser();
 			mainFrame.dispose();
 			createMainFrame();
 		});
@@ -537,7 +538,12 @@ public class GUI {
 		}
 	 
 	 private boolean isCurrentUserCreator(int chatId) {
-		    Chat chat = user.getChatList().getCopyOfChat(chatId);
+		 		Chat chat = null;
+		 		try {
+		 			chat = user.getChatList().getCopyOfChat(chatId);
+		 		} catch (IndexOutOfBoundsException e) {
+		 			return false;
+		 		}
 
 		    if (chat == null) {
 		        return false;
@@ -546,7 +552,9 @@ public class GUI {
 		    return chat.getCreatorUsername().equals(user.getUsername());
 	}
 	 
-	 public void reloadChatList() {
+	 public void reloadChatList(User user) {
+		 if(this.user != user)
+			 return;
 		 if(chatListPanel == null) {
 		 		chatListPanel = new JPanel();
 		 		chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
@@ -595,8 +603,14 @@ public class GUI {
 
 		 
 	 }
-	 
-	 
+
+	 public void setNewAuditUser(User user) {
+		 if(user != null) {
+			 this.user = user;
+			 mainFrame.dispose();
+			 createMainFrame();
+		 }
+	 }
 	 
 	 
 	 // SubType.LOGOUT

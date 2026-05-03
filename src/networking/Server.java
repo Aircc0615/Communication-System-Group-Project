@@ -24,6 +24,8 @@ public class Server {
 	private static List<ClientHandler> currentClients = new ArrayList<>();
 	private int numCurrentClients;
 	private HashMap<String, ClientHandler> mapUsernameToClient = new HashMap(); //string is username
+	private HashMap<String, Set<ClientHandler>> mapUsernameToITClient = new HashMap();
+	private HashMap<ClientHandler, String> mapITClientToUsername = new HashMap();
 	private HashMap<String, User> usernameToUser = new HashMap();
 	private UserLoginModule userLoginModule = new UserLoginModule(usernameToUser); 
 	
@@ -122,6 +124,7 @@ public class Server {
     }
 
     public void sendToClients(Message message, String[] usernames) throws IOException {
+    	Message itMessage = handleITMessageConstruction(message);
     	for(String username : usernames) {
     		if(mapUsernameToClient.containsKey(username)) {
     			ClientHandler client = mapUsernameToClient.get(username);
@@ -129,12 +132,33 @@ public class Server {
     		} else {
     			//add unread buffer logic here
     		}
+    		if(mapUsernameToITClient.containsKey(username)) {
+    			if(itMessage == null)
+    				continue;
+    			Set<ClientHandler> clients = mapUsernameToITClient.get(username);
+    			for(ClientHandler client : clients) {
+    				client.sendToClient(message);
+    			}
+    		}
     	}
     }
 
     public void sendToClient(Message message, String username) throws IOException {
-    	ClientHandler client = mapUsernameToClient.get(username);
-    	client.sendToClient(message);
+    	Message itMessage = handleITMessageConstruction(message);
+    	if(mapUsernameToClient.containsKey(username)) {
+    		ClientHandler client = mapUsernameToClient.get(username);
+    		client.sendToClient(message);
+    	} else {
+    		//add unread buffer logic here
+    	}
+    	if(mapUsernameToITClient.containsKey(username)) {
+    		if(itMessage == null)
+    			return;
+    		Set<ClientHandler> clients = mapUsernameToITClient.get(username);
+    		for(ClientHandler client : clients) {
+    			client.sendToClient(message);
+    		}
+    	}
     }
     
 	// MESSAGE: MainType.TEXT    
@@ -235,7 +259,7 @@ public class Server {
 		
 		try {
 			chats.removeChatMember(chatId, userToRemove, chatOwner);
-			usernameToUser.get(userToRemove).removeChat(chatId, chatOwner);;
+			usernameToUser.get(userToRemove).removeChat(chatId, chatOwner);
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.SUCCESS, "", chatOwner, chatId);
 		} catch(IndexOutOfBoundsException e) {
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.FAILED);
@@ -269,10 +293,40 @@ public class Server {
     public void handleAuditSelectUser(Message message, ClientHandler clientHandler) throws IOException {
 		String username = message.getText();
 		String fromUsername = message.getUsername();
+		if(!usernameToUser.containsKey(username) || !(message.getStatus() == Status.REQUEST))
+			return;
 		User user = usernameToUser.get(username);
+		Set<ClientHandler> itUserClients;
+		if(mapUsernameToITClient.containsKey(username))
+			itUserClients = mapUsernameToITClient.get(username);
+		else
+			itUserClients = new HashSet<>();
+		itUserClients.add(clientHandler);
+		mapUsernameToITClient.put(username, itUserClients);
+		if(mapITClientToUsername.containsKey(clientHandler)) {
+			String prevUsername = mapITClientToUsername.get(clientHandler);
+			if(mapUsernameToITClient.containsKey(prevUsername)) {
+				Set<ClientHandler> handlers = mapUsernameToITClient.get(prevUsername);
+				handlers.remove(clientHandler);
+				mapUsernameToITClient.put(prevUsername, handlers);
+			}
+		}
+		mapITClientToUsername.put(clientHandler, username);
 		Message response = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER, Status.SUCCESS, username, user);
 		sendToClient(response, fromUsername);
 	}
+
+    public void handleExitAudit(ClientHandler clientHandler) {
+    	if(mapITClientToUsername.containsKey(clientHandler)) {
+    		String prevUsername = mapITClientToUsername.get(clientHandler);
+    		if(mapUsernameToITClient.containsKey(prevUsername)) {
+    			Set<ClientHandler> itUserClients = mapUsernameToITClient.get(prevUsername);
+    			itUserClients.remove(clientHandler);
+    			mapUsernameToITClient.put(prevUsername, itUserClients);
+    		}
+    		mapITClientToUsername.remove(clientHandler);
+    	}
+    }
     
     // SubType.VIEW_CHATS
     public void handleAuditViewChats(Message message, ClientHandler clientHandler) {
@@ -307,9 +361,34 @@ public class Server {
 	public boolean logoutUser(String username) {
 		if(mapUsernameToClient.containsKey(username)) {
 			mapUsernameToClient.remove(username);
+			mapUsernameToITClient.remove(username);
 			return true;
 		}
 		return false;
+	}
+
+	public Message handleITMessageConstruction(Message msg) {
+		Status status = msg.getStatus();
+		if(status == Status.FAILED)
+			return null;
+		MainType main = MainType.AUDIT_OPERATION;
+		SubType sub = msg.getSubType();
+		Message message = null;
+		switch(sub) {
+			case SubType.REMOVE_USER_FROM_GC: 
+				message = new Message(main, sub, Status.SUCCESS, msg.getText(), msg.getUsername(), msg.getChatId());
+				break;
+			case SubType.ADD_USER_TO_GC: 
+				message = new Message(main, sub, Status.SUCCESS, msg.getText(), msg.getUsername(), msg.getChatId());
+				break;
+			case SubType.ACTUAL_CHAT: 
+				message = new Message(main, sub, Status.SUCCESS, msg.getChat());
+				break;
+			case SubType.SEND_TEXT_MESSAGE: 
+				message = new Message(main, sub, Status.SUCCESS, msg.getTextMessage(), msg.getChatId());
+				break;
+		}
+		return message;
 	}
 }
 
