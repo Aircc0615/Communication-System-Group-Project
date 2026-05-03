@@ -98,7 +98,7 @@ public class GUI {
 			    try {
 					if(createNewAccount()) { //if the account was made successfully
 						JOptionPane.showMessageDialog(loginFrame, 
-								"Your account was succesfully created. Please try loggin in!",
+								"Your account was succesfully created. Please try logging in!",
 								"Account Succesfully Created",
 								JOptionPane.DEFAULT_OPTION);
 					}
