@@ -66,6 +66,9 @@ public class Client {
 
         outputStream = clientSideSocket.getOutputStream(); //output that were sending to server
         objectOutputStream = new ObjectOutputStream(outputStream); //deconstructing the object were sending, this serializes the object
+
+        serverInputStream = clientSideSocket.getInputStream(); //whatever is coming in from the server
+        objectInputStream = new ObjectInputStream(serverInputStream); // we need to reconstruct the message object
 		return clientSideSocket;
 	}
 
@@ -89,7 +92,6 @@ public class Client {
         	Message msg = (Message) objectInputStream.readObject();
         	if(msg.mainType == MainType.DISPLAY) {
         		if(msg.subType == SubType.ACTUAL_CHAT) {
-        			System.out.println("Gets into new chat load");
         			user.addChat(msg.getChat());
         			updateChatList();
         		}
@@ -102,8 +104,9 @@ public class Client {
 						// TODO Auto-generated catch block
 	            	 e.printStackTrace();
 	             }
+	          }
 	        } else if (msg.mainType == MainType.TEXT) {
-	          } else if(msg.subType == SubType.SEND_TEXT_MESSAGE) {
+	          if(msg.subType == SubType.SEND_TEXT_MESSAGE) {
 	            	if(msg.status == Status.FAILED) {
 	            		System.err.println("Failed message sent sent to " + msg.getChatId());
 	            	} else if (msg.status == Status.SUCCESS){
@@ -113,14 +116,13 @@ public class Client {
 	            		//gui.updatechatlist(msg.getChatId()) <- will update the chat as well
 	            	}
 	            }
-	            else { 
+	        }else { 
 	            	if(msg.getUser() != null)
 	            		System.out.println("\n" + msg.getUser().getUsername() + ": " + msg.getText() + '\n'); //display message along with who its from
 	            	else {
 	            		System.out.println("\nServer: " + msg.getText() + '\n');
 	            	}
 	            }
-        	}
         }
 	}
 
@@ -143,12 +145,9 @@ public class Client {
         
         objectOutputStream.writeObject(loginRequestMessage); //sending the login message to server
         
-        serverInputStream = clientSideSocket.getInputStream(); //whatever is coming in from the server
-        objectInputStream = new ObjectInputStream(serverInputStream); // we need to reconstruct the message object
         
         Message incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
         updateMessageHistory(incomingLoginResponse);
-        
         if(incomingLoginResponse.status == Status.SUCCESS && incomingLoginResponse.subType == SubType.LOGIN_RESPONSE) {
             System.out.println(incomingLoginResponse.getText() + "\n");
             //System.out.println("Enter text to send!\n");
@@ -175,7 +174,7 @@ public class Client {
 	// MESSAGE: MainType.TEXT
 	// SubType.SEND_TEXT_MESSAGE
 	public static void sendMessage(String text, int chatId) throws IOException {
-	    Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, text, user, chatId);
+	    Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, text, user.getUsername(), chatId);
 	    updateMessageHistory(message); //the message the user input should be sent
 	    sendToServer(message); //where the object gets serialized and sent     
 	}

@@ -1,7 +1,8 @@
 package chat;
+import java.io.Serializable;
 import java.time.Instant;
 
-public class TextMessage {
+public class TextMessage implements Serializable{
 	private String text;
 	private String username;
 	private int userId;

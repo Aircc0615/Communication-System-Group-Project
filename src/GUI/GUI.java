@@ -291,7 +291,7 @@ public class GUI {
 		 panel1.removeAll();
 		 currentChatId = chatId;
 		 Chat chat = user.getCopyOfChat(chatId);
-		 
+		 System.out.println("messages in chat: " + chat.getNumMessages());
 		 for(int i = 0; i< chat.getNumMessages(); i++) {
 			 
 			 JPanel msgPanel = new JPanel(new BorderLayout());
