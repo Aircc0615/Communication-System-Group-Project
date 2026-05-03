@@ -61,13 +61,11 @@ public class Chat implements Serializable {
 
 	// inserts a message at the end of the message array
 	public void addMessage(TextMessage message) {
-
 		if(message == null){
-			return;
+			throw new IllegalArgumentException();
 		}
-
 		if (message.getText() == null || message.getText().trim().length() == 0){
-			return;
+			throw new IllegalArgumentException();
 		}
 		synchronized (mutexObject) {
 			if (messages.length == 0) {

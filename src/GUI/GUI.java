@@ -450,8 +450,10 @@ public class GUI {
 		if (msgScrollPane == null){
 			return;
 		}
-		JScrollBar verticalBar = msgScrollPane.getVerticalScrollBar();
-		verticalBar.setValue(verticalBar.getMaximum());
+		SwingUtilities.invokeLater(() ->{
+			JScrollBar verticalBar = msgScrollPane.getVerticalScrollBar();
+			verticalBar.setValue(verticalBar.getMaximum());
+		});
 	}
 	
 	 private JPopupMenu createProfileMenu() {
