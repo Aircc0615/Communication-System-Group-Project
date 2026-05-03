@@ -21,13 +21,38 @@ public class Server {
 	private int numOnlineUsers;
 	private static List<ClientHandler> currentClients = new ArrayList<>();
 	private int numCurrentClients;
-	private HashMap<String, ClientHandler> mapUsernameToClient; //string is username
+	private HashMap<String, ClientHandler> mapUsernameToClient = new HashMap(); //string is username
 	private HashMap<String, User> usernameToUser = new HashMap();
 	private UserLoginModule userLoginModule = new UserLoginModule(usernameToUser); 
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {
     	Server server = new Server();
+    	server.createTestUsers();
     	server.startServer();
+    }
+    
+    //used to test GUI
+    public void createTestUsers() {
+    	User user1 = new User("user1", "pw");
+    	User user2 = new User("user2", "pw");
+    	User user3 = new User("user3", "pw");
+    	User user4 = new User("user4", "pw");
+    	User user5 = new User("user5", "pw");
+    	User user6 = new User("user6", "pw");
+    	
+    	users.add(user1);
+    	users.add(user2);
+    	users.add(user3);
+    	users.add(user4);
+    	users.add(user5);
+    	users.add(user6);
+    	
+    	usernameToUser.put(user1.getUsername(), user1);
+    	usernameToUser.put(user2.getUsername(), user2);
+    	usernameToUser.put(user3.getUsername(), user3);
+    	usernameToUser.put(user4.getUsername(), user4);
+    	usernameToUser.put(user5.getUsername(), user5);
+    	usernameToUser.put(user6.getUsername(), user6);
     }
     
     public void startServer() {
@@ -56,10 +81,15 @@ public class Server {
 
     }
     
-    public User authenticateUser(User userToAuthenticate, ClientHandler handler) {
+    public User authenticateUser(User userToAuthenticate, ClientHandler handler) throws IOException {
+    	System.out.println("Authenticating User");
     	User user = userLoginModule.authenticateUser(userToAuthenticate);
-    	if(user != null)
+    	if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
+    		System.out.println("Successful");
+    		Message authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
+    		sendToClient(authenticationResponse, user.getUsername());
+    	}
     	return user;
     }
     
@@ -123,7 +153,7 @@ public class Server {
 	// MESSAGE: MainType.CHAT_OPERATIONs    
 	// SubType.CREATE_GC
 	public void handleCreateChat(Message message, ClientHandler clientHandler) throws IOException {
-		String usersToBeAddedToChat = message.getUser().getUsername() + ", "+ message.getText();
+		String usersToBeAddedToChat = message.getUsername() + ", "+ message.getText();
 		String[] memberUsernames = usersToBeAddedToChat.split(","); //the usernames will be passed as a single string so we split
 		List<String> validUsers = new ArrayList<>();
 		

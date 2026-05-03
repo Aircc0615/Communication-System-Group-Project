@@ -58,7 +58,7 @@ public class ClientHandler implements Runnable{
 
                performMessageOperation(clientSocket, clientInputStream, message); //this would perform the appropriate operation depending on the message Main and Sub types
             }
-            Message logoutSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGOUT, Status.SUCCESS, "Logout successful", null);
+            Message logoutSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGOUT, Status.SUCCESS, "Logout successful");
             messageList.add(logoutSuccess);
             objectOutputStream.writeObject(logoutSuccess);
 
@@ -163,13 +163,13 @@ public class ClientHandler implements Runnable{
     
     //helper functions
     public void successfulLogin() throws IOException {
-        Message loginSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE , Status.SUCCESS, "Login successful", null); //create a login success message to send to the user
+        Message loginSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE , Status.SUCCESS, "Login successful"); //create a login success message to send to the user
         objectOutputStream.writeObject(loginSuccess); //sends back the successful login message
         messageList.add(loginSuccess); //login message that is sent out from server to client gets added to the array
     }
     
     public void failedLoginAttempt() throws IOException{
-    	Message loginFailed = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE , Status.SUCCESS, "Invalid username/password. Please try again.", null); //create a login success message to send to the user
+    	Message loginFailed = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE , Status.SUCCESS, "Invalid username/password. Please try again."); //create a login success message to send to the user
         objectOutputStream.writeObject(loginFailed); //sends back the successful login message
         messageList.add(loginFailed); //login message that is sent out from server to client gets added to the array
     }

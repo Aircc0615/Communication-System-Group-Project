@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import GUI.GUI;
 import chat.Chat;
 import chat.TextMessage;
 import user.User;
@@ -20,7 +21,12 @@ public class Client {
 	static Scanner sin = new Scanner(System.in);
 	private static User user;
 	private static User selectedAuditUser;
+	private static GUI gui;
 	
+	
+		public void assignGUI(GUI gui) {
+			this.gui = gui;
+		}
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {    	
     	clientSideSocket = connectToServer();
@@ -124,10 +130,12 @@ public class Client {
         Message incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
         updateMessageHistory(incomingLoginResponse);
         
-        if(incomingLoginResponse.status == Status.SUCCESS) {
+        if(incomingLoginResponse.status == Status.SUCCESS && incomingLoginResponse.subType == SubType.LOGIN_RESPONSE) {
             System.out.println(incomingLoginResponse.getText() + "\n");
-            System.out.println("Enter text to send!\n");
-            return user;
+            //System.out.println("Enter text to send!\n");
+            User actualUser = incomingLoginResponse.getUser();
+            actualUser.addChatThreadSafety();
+            return actualUser;
         }
         else {
         	System.out.println("Invalid Login. Please try again.");
@@ -174,7 +182,7 @@ public class Client {
 	// MESSAGE: MainType.CHAT_OPERATIONs
 	// CREATE_GC 	||       this will work for making either a DM or GC
 	public void createChat(String usernames) throws IOException {
-		Message createGC= new Message(MainType.CHAT_OPERATION, SubType.CREATE_GC , Status.REQUEST, usernames, user);
+		Message createGC= new Message(MainType.CHAT_OPERATION, SubType.CREATE_GC , Status.REQUEST, usernames, user.getUsername());
 		updateMessageHistory(createGC); //store operation in history
 		sendToServer(createGC);
 	}
