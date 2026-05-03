@@ -12,17 +12,18 @@ import chat.TextMessage;
 import user.User;
 
 public class Client {
-	static InputStream serverInputStream = null;
-	static ObjectInputStream objectInputStream  = null;
-	static OutputStream outputStream = null;
-	static ObjectOutputStream objectOutputStream = null;
-	static Socket clientSideSocket = null;
-	static List<Message> messageHistory = new ArrayList<>(); //client side message history
-	static Scanner sin = new Scanner(System.in);
-	private static User user;
-	private static User selectedAuditUser;
-	private static GUI gui;
-	private static Thread serverListener;
+	InputStream serverInputStream = null;
+	ObjectInputStream objectInputStream  = null;
+	OutputStream outputStream = null;
+	ObjectOutputStream objectOutputStream = null;
+	Socket clientSideSocket = null;
+	List<Message> messageHistory = new ArrayList<>(); //client side message history
+	Scanner sin = new Scanner(System.in);
+	private User user;
+	private User selectedAuditUser;
+	private GUI gui;
+	private Thread serverListener;
+	private boolean auditingUser;
 	
 	
 		public void assignGUI(GUI gui) {
@@ -57,7 +58,8 @@ public class Client {
 	
     // Client Side Server Operations
 	// Allows Client to connect to server and returns the socket 
-	public static Socket connectToServer() throws UnknownHostException, IOException {
+	public Socket connectToServer() throws UnknownHostException, IOException {
+				auditingUser = false;
         int port = 7777;
         String host = "localhost"; //need to update to actual host
 
@@ -127,11 +129,11 @@ public class Client {
 	}
 
 	//helper functions
-	public static void sendToServer(Message message) throws IOException{
+	public void sendToServer(Message message) throws IOException{
 		objectOutputStream.writeObject(message);
 	}
 	
-	public static void updateMessageHistory(Message message) {
+	public void updateMessageHistory(Message message) {
 		messageHistory.add(message);
 	}
 	
@@ -163,8 +165,8 @@ public class Client {
 	}
 	
     // SubType.LOGOUT
-	public static void logout() throws IOException, ClassNotFoundException {
-		Message logOutRequest = new Message(MainType.AUTHENTICATION, SubType.LOGOUT , Status.REQUEST, user.getUsername() + "Requesting logout...\n", user);
+	public void logout() throws IOException, ClassNotFoundException {
+		Message logOutRequest = new Message(MainType.AUTHENTICATION, SubType.LOGOUT , Status.REQUEST, "", user.getUsername());
 		updateMessageHistory(logOutRequest); //store operation in history
 		sendToServer(logOutRequest);
 	}
@@ -173,7 +175,7 @@ public class Client {
 	
 	// MESSAGE: MainType.TEXT
 	// SubType.SEND_TEXT_MESSAGE
-	public static void sendMessage(String text, int chatId) throws IOException {
+	public void sendMessage(String text, int chatId) throws IOException {
 	    Message message = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE , Status.REQUEST, text, user.getUsername(), chatId);
 	    updateMessageHistory(message); //the message the user input should be sent
 	    sendToServer(message); //where the object gets serialized and sent     
@@ -183,7 +185,7 @@ public class Client {
 	
 	// MESSAGE: MainType.DISPLAY
 	// SubType.ACTUAL_CHAT
-	public static void requestActualChat() throws IOException, ClassNotFoundException {
+	public void requestActualChat() throws IOException, ClassNotFoundException {
 		Message actualChatRequest = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT , Status.REQUEST, null, user);
 		updateMessageHistory(actualChatRequest); //store operation in history
 		sendToServer(actualChatRequest);
@@ -191,7 +193,7 @@ public class Client {
 	}
 	
 	// SubType.USER_STATE
-	public static void getUserState() throws IOException, ClassNotFoundException {
+	public void getUserState() throws IOException, ClassNotFoundException {
 		Message userStateRequest = new Message(MainType.DISPLAY, SubType.USER_STATE , Status.REQUEST, null, user);
 		updateMessageHistory(userStateRequest); //store operation in history
 		sendToServer(userStateRequest);
@@ -232,23 +234,23 @@ public class Client {
 	
 	// MESSAGE: MainType.AUDIT_OPERATION
 	// SubType.ENTER_AUDIT_MODE
-	public void enterAuditMode() throws IOException {
+	/*public void enterAuditMode() throws IOException {
 		Message enterAuditMode = new Message(MainType.AUDIT_OPERATION, SubType.ENTER_AUDIT_MODE , Status.REQUEST, null, user);
 		updateMessageHistory(enterAuditMode); //store operation in history
 		sendToServer(enterAuditMode);
-	}
+	}*/
 
-	public void auditResponse(boolean isIt) {
+	/*public void auditResponse(boolean isIt) {
 		if(!isIt)
 			return;
 		//Gui Logic for switching to audit view goes here
 		//
 		//
-	}
+	}*/
 	
 	// SubType.SELECT_USER
 	public void audit_SelectUser(String username) throws IOException {
-		Message selectedUser = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER , Status.REQUEST, username, user);
+		Message selectedUser = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER , Status.REQUEST, username);
 		updateMessageHistory(selectedUser); //store operation in history
 		sendToServer(selectedUser);
 	}

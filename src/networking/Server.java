@@ -85,6 +85,8 @@ public class Server {
     
     public User authenticateUser(User userToAuthenticate, ClientHandler handler) throws IOException {
     	System.out.println("Authenticating User");
+    	if(mapUsernameToClient.containsKey(userToAuthenticate.getUsername()))
+    		return null;
     	User user = userLoginModule.authenticateUser(userToAuthenticate);
     	Message authenticationResponse;
     	if(user != null) {
@@ -302,6 +304,13 @@ public class Server {
 		
 	}
 
+	public boolean logoutUser(String username) {
+		if(mapUsernameToClient.containsKey(username)) {
+			mapUsernameToClient.remove(username);
+			return true;
+		}
+		return false;
+	}
 }
 
 

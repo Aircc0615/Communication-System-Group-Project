@@ -53,11 +53,15 @@ public class ClientHandler implements Runnable{
                 System.err.println("Invalid User");
             	}
             }
-            while (message.subType != SubType.LOGOUT) {
+            while (true) {
                message = (Message) objectInputStream.readObject(); //read the incoming object
                messageList.add(message); //add the incoming messages to the array
 
                performMessageOperation(clientSocket, clientInputStream, message); //this would perform the appropriate operation depending on the message Main and Sub types
+               if(message.subType == SubType.LOGOUT) {
+              	 if(server.logoutUser(message.getUsername()))
+              		 break;
+               }
             }
             Message logoutSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGOUT, Status.SUCCESS, "Logout successful");
             messageList.add(logoutSuccess);

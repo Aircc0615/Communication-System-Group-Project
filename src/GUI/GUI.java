@@ -39,10 +39,10 @@ public class GUI {
 	
 	
 	public GUI(Client client) throws UnknownHostException, IOException{
-		 buildGUI();
 		 this.client = client;
 		 client.assignGUI(this);
 		 currentChatId = -1;
+		 buildGUI();
 	 }
 	
 	 public void buildGUI() throws UnknownHostException, IOException {
@@ -489,7 +489,7 @@ public class GUI {
 		});
 		
 		//profile.add(myProfile);
-	    if(user.getRole().equals("IT")) {
+	    if(user.isInformationTechnologyUser()) {
 	    	if(auditMode == false) {
 	    		profile.add(audit);
 			    profile.addSeparator();
@@ -654,9 +654,9 @@ public class GUI {
 		
 	// MESSAGE: MainType.AUDIT_OPERATION
 	// SubType.ENTER_AUDIT_MODE
-	 private void enterAuditMode() throws IOException {
+	 /*private void enterAuditMode() throws IOException {
 		 client.enterAuditMode();
-	 }
+	 }*/
 	 
 	 // SubType.SELECT_USER
 	 private void audit_SelectUser(String username) throws IOException{
