@@ -42,6 +42,7 @@ public class GUI {
 		 this.client = client;
 		 client.assignGUI(this);
 		 currentChatId = -1;
+		 client.connectToServer(); //as soon as the application runs we connect to the server
 		 buildGUI();
 	 }
 	
@@ -63,8 +64,6 @@ public class GUI {
 		 
 	 }
 	 public void createLoginForm() throws UnknownHostException, IOException {
-		 client.connectToServer(); //as soon as the application runs we connect to the server
-		 
 		 JLabel userLabel = new JLabel("Username");
 		 JTextField usernameField = new JTextField(16);
 		 
@@ -97,17 +96,19 @@ public class GUI {
 			    user = new User(username, password);
 			    //System.out.println(username + "\n"+ password);
 			    try {
-					client.createNewAccount(user);
-					JOptionPane.showMessageDialog(
-					        loginFrame,
-					        "Account created successfully!",
-					        "Account Created",
-					        JOptionPane.INFORMATION_MESSAGE
-					    );
-					loginFrame.dispose();
-					createLoginFrame();
-					
-				} catch (IOException e1) {
+					if(createNewAccount()) { //if the account was made successfully
+						JOptionPane.showMessageDialog(loginFrame, 
+								"Your account was succesfully created. Please try loggin in!",
+								"Account Succesfully Created",
+								JOptionPane.DEFAULT_OPTION);
+					}
+					else { //failed to make the account
+						JOptionPane.showMessageDialog(loginFrame, 
+								"Please provide a unique username. Username and password must be a minimum of 6 characters in length.",
+								"Account Creation Failed",
+								JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (IOException | ClassNotFoundException e1 ) {
 					e1.printStackTrace();
 				}
 			});
@@ -631,6 +632,11 @@ public class GUI {
 	 // SubType.LOGOUT
 	 private void logoutUser() throws ClassNotFoundException, IOException {
 		 client.logout();
+	 }
+	 
+	// SubType.CREATE_USER
+	 public boolean createNewAccount() throws IOException, ClassNotFoundException {
+		 return client.createNewAccount(user);
 	 }
 	 	 
 	 // MESSAGE: MainType.TEXT

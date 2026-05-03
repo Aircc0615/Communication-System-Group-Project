@@ -144,12 +144,12 @@ public class Client {
         
         Message loginRequestMessage = new Message(MainType.AUTHENTICATION, SubType.LOGIN, Status.REQUEST, user.getUsername() + "requesting login", user); //login message created
         updateMessageHistory(loginRequestMessage); //add the login message to the message history
-        
-        objectOutputStream.writeObject(loginRequestMessage); //sending the login message to server
+        sendToServer(loginRequestMessage); //sending the login message to server
         
         
         Message incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
         updateMessageHistory(incomingLoginResponse);
+       
         if(incomingLoginResponse.status == Status.SUCCESS && incomingLoginResponse.subType == SubType.LOGIN_RESPONSE) {
             System.out.println(incomingLoginResponse.getText() + "\n");
             //System.out.println("Enter text to send!\n");
@@ -171,10 +171,23 @@ public class Client {
 		sendToServer(logOutRequest);
 	}
 	
-	public void createNewAccount(User user) throws IOException {
+	// SubType.CREATE_USER
+	public boolean createNewAccount(User user) throws IOException, ClassNotFoundException {
 		Message createAccountRequest = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.REQUEST, user.getUsername() + "attempting to create account...\n", user);
 		updateMessageHistory(createAccountRequest); //store operation in history
 		sendToServer(createAccountRequest);
+		
+		Message incomingAccountCreationResponse = (Message) objectInputStream.readObject(); //deSerialized the message
+        updateMessageHistory(incomingAccountCreationResponse);
+        
+        if(incomingAccountCreationResponse.status == Status.SUCCESS && incomingAccountCreationResponse.subType == SubType.CREATE_USER) {
+        	// account was made successfully
+        	return true;
+        }
+        else {
+        	// failed to make account
+        	return false;
+        }
 	}
 	
 	// MESSAGE: MainType.TEXT

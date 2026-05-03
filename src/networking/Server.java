@@ -17,12 +17,10 @@ import user.UserLoginModule;
 
 public class Server {
 	private List<User> users = new ArrayList<>();
-	private int numUsers;
 	private ChatList chats = new ChatList();
 	private List<User> onlineUsers = new ArrayList<>();
 	private int numOnlineUsers;
 	private static List<ClientHandler> currentClients = new ArrayList<>();
-	private int numCurrentClients;
 	private HashMap<String, ClientHandler> mapUsernameToClient = new HashMap(); //string is username
 	private HashMap<String, User> usernameToUser = new HashMap();
 	private UserLoginModule userLoginModule = new UserLoginModule(usernameToUser); 
@@ -91,7 +89,7 @@ public class Server {
     	Message authenticationResponse;
     	if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
-    		System.out.println("Successful");
+    		System.out.println( "\n" + user.getUsername() + "Successful login!");
     		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
     		sendToClient(authenticationResponse, user.getUsername());
     	} else {
@@ -313,6 +311,14 @@ public class Server {
 			return true;
 		}
 		return false;
+	}
+
+	// helper
+	public void printAllUsers() {
+		for(int i = 0; i < users.size(); i++) {
+			System.out.println(users.get(i).getUsername());
+		}
+		
 	}
 }
 
