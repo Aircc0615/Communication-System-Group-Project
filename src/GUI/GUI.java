@@ -262,7 +262,7 @@ public class GUI {
 		 topRightPanel.setPreferredSize(new Dimension(500, 50));
 		 
 		 //middle
-		 JScrollPane msgScrollPane = new JScrollPane();
+		 msgScrollPane = new JScrollPane();
 		 msgScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		 msgScrollPane.setPreferredSize(new Dimension(10, 700));
 		 
@@ -333,7 +333,16 @@ public class GUI {
 		 }
 		 panel1.revalidate();
 		 panel1.repaint();
+		 scrollToBottom();
 		 
+	}
+
+	private void scrollToBottom(){
+		if (msgScrollPane == null){
+			return;
+		}
+		JScrollBar verticalBar = msgScrollPane.getVerticalScrollBar();
+		verticalBar.setValue(verticalBar.getMaximum());
 	}
 	
 	 private JPopupMenu createProfileMenu() {
