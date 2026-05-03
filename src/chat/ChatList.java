@@ -256,23 +256,29 @@ public class ChatList implements Serializable{
 		int chatIndex = parseId(tempChats, chatId);
 		if(chatIndex == -1)
 			throw new IndexOutOfBoundsException();
-		return tempChats[chatId].getNumMembers();
+		return tempChats[chatIndex].getNumMembers();
 	}
 	public int getNumChatMessages(int chatId) {
 		Chat[] tempChats = chats;
 		int chatIndex = parseId(tempChats, chatId);
 		if(chatIndex == -1)
 			throw new IndexOutOfBoundsException();
-		return tempChats[chatId].getNumMessages();
+		return tempChats[chatIndex].getNumMessages();
 	}
 	public Chat getCopyOfChat(int chatId) {
 		Chat[] tempChats = chats;
-		return tempChats[chatId].getCopy();
+		int chatIndex = parseId(tempChats, chatId);
+		if(chatIndex == -1)
+			throw new IndexOutOfBoundsException();
+		return tempChats[chatIndex].getCopy();
 	}
 
 	public String[] getChatMembers(int chatId) {
 		Chat[] tempChats = chats;
-		return tempChats[chatId].getMembersInChat();
+		int chatIndex = parseId(tempChats, chatId);
+		if(chatIndex == -1)
+			throw new IndexOutOfBoundsException();
+		return tempChats[chatIndex].getMembersInChat();
 	}
 
 	public void addThreadSafety() {

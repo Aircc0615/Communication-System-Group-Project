@@ -16,7 +16,7 @@ import user.UserLoginModule;
 public class Server {
 	private List<User> users = new ArrayList<>();
 	private int numUsers;
-	private ChatList chats;
+	private ChatList chats = new ChatList();
 	private List<User> onlineUsers = new ArrayList<>();
 	private int numOnlineUsers;
 	private static List<ClientHandler> currentClients = new ArrayList<>();
@@ -115,8 +115,12 @@ public class Server {
 
     public void sendToClients(Message message, String[] usernames) throws IOException {
     	for(String username : usernames) {
-    		ClientHandler client = mapUsernameToClient.get(username);
-    		client.sendToClient(message);
+    		if(mapUsernameToClient.containsKey(username)) {
+    			ClientHandler client = mapUsernameToClient.get(username);
+    			client.sendToClient(message);
+    		} else {
+    			//add unread buffer logic here
+    		}
     	}
     }
 
@@ -168,11 +172,12 @@ public class Server {
 		String[] chatUsers = validUsers.toArray(new String[0]);
 		Message messageToSend;
 		if(chatUsers.length >= 2) {
-			Chat newChat = null;
-			if(chatUsers.length == 2)
-				newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.PRIVATE);
-			else
-				newChat = new Chat(message.getUser().getUsername(), chatUsers, ChatType.GROUP);
+			Chat newChat;
+			if(chatUsers.length == 2) {
+				newChat = new Chat(message.getUsername(), chatUsers, ChatType.PRIVATE);
+			} else {
+				newChat = new Chat(message.getUsername(), chatUsers, ChatType.GROUP);
+			}
 			int chatId = newChat.getChatId();
 			chats.addChat(newChat);
 		
@@ -181,13 +186,13 @@ public class Server {
 				user.addChat(newChat);
 			}
 			newChat = chats.getCopyOfChat(chatId);
-			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ACTUAL_CHAT, Status.SUCCESS, newChat);
+			messageToSend = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, newChat);
 			sendToClients(messageToSend, chatUsers);
 			return;
 		}
 		messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ACTUAL_CHAT, Status.FAILED);
 		//need to send response to client
-		sendToClient(messageToSend, message.getUser().getUsername());
+		sendToClient(messageToSend, message.getUsername());
 	}
 	
 	// SubType.ADD_USER_TO_GC

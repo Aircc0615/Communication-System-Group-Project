@@ -28,7 +28,7 @@ public class Client {
 			this.gui = gui;
 		}
 	
-    public static void main(String[] args) throws IOException, ClassNotFoundException {    	
+    /*public static void main(String[] args) throws IOException, ClassNotFoundException {    	
     	clientSideSocket = connectToServer();
     	
         System.out.println("Please enter your username!");
@@ -40,13 +40,7 @@ public class Client {
         User authenticatedUser = login(user); //if the user we passed is authenticated it returns the same value otherwise it returns null
 
         if (authenticatedUser != null) {
-        	Thread serverListener = new Thread(new Runnable() {
-        		public void run() {
-        			try {
-						listenForServerMessages();
-					} catch (ClassNotFoundException | IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+        	user = authenticatedUser;
 					}     
         		}
     		});
@@ -58,7 +52,7 @@ public class Client {
             	sendMessage(text, 0); // currently chat id of 0 (!! Must change when integrating with GUI !!)
             }
         }
-    }
+    }*/
 	
     // Client Side Server Operations
 	// Allows Client to connect to server and returns the socket 
@@ -73,11 +67,32 @@ public class Client {
         objectOutputStream = new ObjectOutputStream(outputStream); //deconstructing the object were sending, this serializes the object
 		return clientSideSocket;
 	}
+
+	public void createServerListener() {
+    Thread serverListener = new Thread(new Runnable() {
+       public void run() {
+        	try {
+						listenForServerMessages();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+       }
+    });
+	}
 	
 	// Allows client to listen for incoming messages
-	public static void listenForServerMessages() throws ClassNotFoundException, IOException {
+	public void listenForServerMessages() throws ClassNotFoundException, IOException {
+				System.out.println("Listening to server now");
         while(!clientSideSocket.isClosed()) {
         	Message msg = (Message) objectInputStream.readObject();
+        	if(msg.mainType == MainType.DISPLAY) {
+        		if(msg.subType == SubType.ACTUAL_CHAT) {
+        			System.out.println("Gets into new chat load");
+        			int chatId = msg.getChat().getChatId();
+        			user.addChat(msg.getChat());
+        			gui.reloadChatList();
+        		}
+        	} else if(msg.mainType == MainType.AUTHENTICATION) {
 	          if(msg.subType == SubType.LOGOUT) {
 	             System.out.println("Logging out!"); //after user logs out we can close the client side socket
 	             try {
@@ -86,6 +101,7 @@ public class Client {
 						// TODO Auto-generated catch block
 	            	 e.printStackTrace();
 	             }
+	        } else if (msg.mainType == MainType.TEXT) {
 	          } else if(msg.subType == SubType.SEND_TEXT_MESSAGE) {
 	            	if(msg.status == Status.FAILED) {
 	            		System.err.println("Failed message sent sent to " + msg.getChatId());
@@ -102,6 +118,7 @@ public class Client {
 	            		System.out.println("\nServer: " + msg.getText() + '\n');
 	            	}
 	            }
+        	}
         }
 	}
 
@@ -116,7 +133,7 @@ public class Client {
 	
     // MESSAGE: MainType.AUTHENTICATION
     // SubType.LOGIN
-	public static User login(User user) throws IOException, ClassNotFoundException {
+	public User login(User user) throws IOException, ClassNotFoundException {
         System.out.println(user.getUsername() + " attempting to log in...");
         
         Message loginRequestMessage = new Message(MainType.AUTHENTICATION, SubType.LOGIN, Status.REQUEST, user.getUsername() + "requesting login", user); //login message created
@@ -135,6 +152,7 @@ public class Client {
             //System.out.println("Enter text to send!\n");
             User actualUser = incomingLoginResponse.getUser();
             actualUser.addChatThreadSafety();
+            this.user = actualUser;
             return actualUser;
         }
         else {

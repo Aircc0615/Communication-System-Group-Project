@@ -27,14 +27,17 @@ public class GUI {
 	boolean auditMode = false;
 	User user;
 	Client client;
+	private int currentChatId;
 	JScrollPane msgScrollPane; 
 	JTextArea textArea;
 	JPanel panel1;
+	private JPanel chatListPanel;
 	
 	public GUI(Client client) throws UnknownHostException, IOException{
 		 buildGUI();
 		 this.client = client;
 		 client.assignGUI(this);
+		 currentChatId = -1;
 	 }
 	
 	 public void buildGUI() throws UnknownHostException, IOException {
@@ -168,24 +171,7 @@ public class GUI {
 		 optionScrollPane.setPreferredSize(new Dimension(240, 530));
 		 
 		 //display chatList
-		 
-		 JPanel chatListPanel = new JPanel();
-		 chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
-		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
-		 
-		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
-			    Chat chat = user.getChatList().getCopyOfChat(i);
-			    //final Chat currentChat = chat;
-
-			    JButton chatButton = new JButton("Chat " + i);
-			    chatButton.setMaximumSize(new Dimension(220, 40));
-
-			    chatButton.addActionListener(e -> {
-			    displayChat(chat);
-			    
-			    });
-			    chatListPanel.add(chatButton);
-			}
+		 reloadChatList();
 		 
 		 optionScrollPane.setViewportView(chatListPanel);
 		 
@@ -300,8 +286,10 @@ public class GUI {
 	 
 	 
 	 
-	 public void displayChat(Chat chat) {
+	 public void displayChat(int chatId) {
 		 panel1.removeAll();
+		 currentChatId = chatId;
+		 Chat chat = user.getCopyOfChat(chatId);
 		 
 		 for(int i = 0; i< chat.getNumMessages(); i++) {
 			 
@@ -402,8 +390,31 @@ public class GUI {
 		 return chatOption;
 	 }
 	 
-	 private void reloadChatList() {
+	 public void reloadChatList() {
+		 if(chatListPanel == null) {
+		 		chatListPanel = new JPanel();
+		 		chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
+		 		System.out.println("First load of chat list");
+		 } else {System.out.println("Reloading chat list due to update");}
+		 chatListPanel.removeAll();
+		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
 		 
+		 int[] chatIds = user.getChatIds();
+		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
+			    //final Chat currentChat = chat;
+			 		int chatId = chatIds[i];
+			    JButton chatButton = new JButton("Chat " + chatId);
+			    chatButton.setMaximumSize(new Dimension(220, 40));
+
+			    chatButton.addActionListener(e -> {
+			    displayChat(chatId);
+			    
+			    });
+			    chatListPanel.add(chatButton);
+		 }
+		 if(currentChatId != -1) {
+			 displayChat(currentChatId);
+		 }
 	 }
 	 
 	 // CLIENT OPERATIONS
@@ -416,6 +427,7 @@ public class GUI {
 		 if(authenticatedUser != null) { // server returns a response either a null value or user
 			 this.user = authenticatedUser;
 			 loginFrame.dispose();
+			 client.createServerListener();
 			 createMainFrame();
 		 }
 		 else {
