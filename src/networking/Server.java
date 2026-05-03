@@ -104,10 +104,10 @@ public class Server {
     	User newUser = userLoginModule.createUser(user);
     	if(newUser != null) {
     		users.add(newUser);
-	        authenticationResponse = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.SUCCESS, "User created successfully", newUser); //create a login success message to send to the user
+	        authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.SUCCESS, "User created successfully", newUser); //create a login success message to send to the user
     	}
     	else {
-    		authenticationResponse = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.FAILED, "Failed to create new user", newUser);
+    		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.FAILED, "Failed to create new user", newUser);
     	}
     	clientHandler.sendToClient(authenticationResponse);
     	return newUser;
