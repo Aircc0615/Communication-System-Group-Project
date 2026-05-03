@@ -32,6 +32,11 @@ public class GUI {
 	JTextArea textArea;
 	JPanel panel1;
 	private JPanel chatListPanel;
+	private JButton chatHeaderButton;
+	JMenuItem addUserItem;
+	JMenuItem removeUserItem;
+	JMenuItem deleteChatItem;
+	
 	
 	public GUI(Client client) throws UnknownHostException, IOException{
 		 buildGUI();
@@ -261,10 +266,93 @@ public class GUI {
 		 
 		 
 		 //top
-		 JPanel topRightPanel = new JPanel();
-		 //topRightPanel.setLayout(new BoxLayout(topRightPanel, BoxLayout.Y_AXIS));
+		 JPanel topRightPanel = new JPanel(new BorderLayout());
 		 topRightPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		 topRightPanel.setPreferredSize(new Dimension(500, 50));
+
+		 chatHeaderButton = new JButton("Select a chat");
+		 chatHeaderButton.setFocusPainted(false);
+		 chatHeaderButton.setEnabled(false);
+
+		 JPopupMenu chatMenu = new JPopupMenu();
+
+		 addUserItem = new JMenuItem("Add people to chat");
+		 removeUserItem = new JMenuItem("Remove user from chat");
+		 deleteChatItem = new JMenuItem("Delete chat");
+
+		 chatMenu.add(addUserItem);
+		 chatMenu.add(removeUserItem);
+		 chatMenu.addSeparator();
+		 chatMenu.add(deleteChatItem);
+
+		 chatHeaderButton.addActionListener(e -> {
+		     chatMenu.show(chatHeaderButton, 0, chatHeaderButton.getHeight());
+		 });
+
+		 addUserItem.addActionListener(e -> {
+		     String username = JOptionPane.showInputDialog(mainFrame, "Enter username to add:");
+		     if (username != null && !username.trim().isEmpty()) {
+		         try {
+		             addUserToChat(username.trim());
+		         } catch (IOException ex) {
+		             JOptionPane.showMessageDialog(mainFrame, "Failed to add user.");
+		             ex.printStackTrace();
+		         }
+		     }
+		 });
+
+		 removeUserItem.addActionListener(e -> {
+		     String username = JOptionPane.showInputDialog(mainFrame, "Enter username to remove:");
+		     if (username != null && !username.trim().isEmpty()) {
+		         try {
+		             removeUserFromChat(username.trim());
+		             JOptionPane.showMessageDialog(mainFrame, "User removed from chat.");
+		         } catch (IOException ex) {
+		             JOptionPane.showMessageDialog(
+		                 mainFrame,
+		                 "Failed to remove user. Only the chat creator can remove people."
+		             );
+		             ex.printStackTrace();
+		         }
+		     }
+		 });
+
+		 deleteChatItem.addActionListener(e -> {
+			    if (currentChatId == -1) {
+			        JOptionPane.showMessageDialog(mainFrame, "No chat selected.");
+			        return;
+			    }
+
+			    int confirm = JOptionPane.showConfirmDialog(
+			        mainFrame,
+			        "Delete chat " + currentChatId + "?",
+			        "Confirm Delete",
+			        JOptionPane.YES_NO_OPTION
+			    );
+
+			    if (confirm == JOptionPane.YES_OPTION) {
+			        try {
+			            deleteGroupChat(String.valueOf(currentChatId));
+
+			            currentChatId = -1;
+			            chatHeaderButton.setText("Select a chat");
+
+			            panel1.removeAll();
+			            panel1.revalidate();
+			            panel1.repaint();
+
+			            reloadChatList();
+			            
+			            JOptionPane.showMessageDialog(mainFrame, "Chat deleted.");
+
+			        } catch (IOException ex) {
+			            JOptionPane.showMessageDialog(mainFrame, "Failed to delete chat.");
+			            ex.printStackTrace();
+			        }
+			    }
+			});
+
+		 topRightPanel.add(chatHeaderButton, BorderLayout.CENTER);
 		 
 		 //middle
 		 msgScrollPane = new JScrollPane();
@@ -434,7 +522,27 @@ public class GUI {
 		 
 		 return chatOption;
 	 }
+	 private void setCurrentChat(int chatId) {
+		    currentChatId = chatId;
+		    chatHeaderButton.setText("Chat ID: " + chatId);
+		    chatHeaderButton.setEnabled(true);
+		    
+		    boolean isCreator = isCurrentUserCreator(chatId);
+
+		    addUserItem.setEnabled(isCreator);
+		    removeUserItem.setEnabled(isCreator);
+		    deleteChatItem.setEnabled(isCreator);
+		}
 	 
+	 private boolean isCurrentUserCreator(int chatId) {
+		    Chat chat = user.getChatList().getCopyOfChat(chatId);
+
+		    if (chat == null) {
+		        return false;
+		    }
+
+		    return chat.getCreatorUsername().equals(user.getUsername());
+	}
 	 
 	 public void reloadChatList() {
 		 if(chatListPanel == null) {
@@ -452,8 +560,8 @@ public class GUI {
 			    chatButton.setMaximumSize(new Dimension(220, 40));
 
 			    chatButton.addActionListener(e -> {
-			    displayChat(chatId);
-			    
+			        setCurrentChat(chatId);
+			        displayChat(chatId);
 			    });
 			    chatListPanel.add(chatButton);
 		 }
@@ -463,6 +571,8 @@ public class GUI {
 		 chatListPanel.revalidate();
 		 chatListPanel.repaint();
 	 }
+	 
+	 
 	 
 	 // CLIENT OPERATIONS
 	 
