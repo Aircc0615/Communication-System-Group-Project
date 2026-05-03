@@ -159,8 +159,11 @@ public class Server {
 		
 		for(String name : usernames) {
 			User otherUser = usernameToUser.get(name);
-			otherUser.updateChatOrder(chatId);
-    		}
+			if(otherUser != null) {
+				otherUser.updateChatOrder(chatId);
+			}
+			else continue;
+    	}
     	
         Message msgToSend = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, txtMsg, chatId);
         sendToClients(msgToSend, usernames);
@@ -176,7 +179,7 @@ public class Server {
 		
 		for(int i = 0; i < memberUsernames.length; i++) {
 			String userToValidate = memberUsernames[i].trim();
-			if(usernameToUser.containsKey(userToValidate)) {
+			if(userToValidate.length() >= 1 && usernameToUser.containsKey(userToValidate)) { //need to update to check for length of 6 chars later
 				validUsers.add(userToValidate);
 			}
 		}

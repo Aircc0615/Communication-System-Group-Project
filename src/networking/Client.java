@@ -169,7 +169,11 @@ public class Client {
 		sendToServer(logOutRequest);
 	}
 	
-	
+	public static void createNewAccount(User user) throws IOException {
+		Message createAccountRequest = new Message(MainType.AUTHENTICATION, SubType.LOGOUT , Status.REQUEST, user.getUsername() + "attempting to create account...\n", user);
+		updateMessageHistory(createAccountRequest); //store operation in history
+		sendToServer(createAccountRequest);
+	}
 	
 	// MESSAGE: MainType.TEXT
 	// SubType.SEND_TEXT_MESSAGE
@@ -268,7 +272,9 @@ public class Client {
 	}
 	
 	private void updateChatList() {
-     user.addChatThreadSafety();
-     gui.reloadChatList();
+	     user.addChatThreadSafety();
+	     gui.reloadChatList();
 	}
+
+
 }
