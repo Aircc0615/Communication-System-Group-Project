@@ -70,18 +70,16 @@ public class Client {
 	// Allows client to listen for incoming messages
 	public static void listenForServerMessages() throws ClassNotFoundException, IOException {
         while(!clientSideSocket.isClosed()) {
-			List<Message> incomingServerMessages = (List<Message>) objectInputStream.readObject();
-	        incomingServerMessages.forEach(msg -> {
-	            if(msg.subType == SubType.LOGOUT) {
-	                System.out.println("Logging out!"); //after user logs out we can close the client side socket
-	                try {
-						clientSideSocket.close(); //once the server actually sends the logout message the socket can close
-					} catch (IOException e) {
+        	Message msg = (Message) objectInputStream.readObject();
+	          if(msg.subType == SubType.LOGOUT) {
+	             System.out.println("Logging out!"); //after user logs out we can close the client side socket
+	             try {
+	            	 clientSideSocket.close(); //once the server actually sends the logout message the socket can close
+	             } catch (IOException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	            }
-	            else if(msg.subType == SubType.SEND_TEXT_MESSAGE) {
+	            	 e.printStackTrace();
+	             }
+	          } else if(msg.subType == SubType.SEND_TEXT_MESSAGE) {
 	            	if(msg.status == Status.FAILED) {
 	            		System.err.println("Failed message sent sent to " + msg.getChatId());
 	            	} else if (msg.status == Status.SUCCESS){
@@ -97,7 +95,6 @@ public class Client {
 	            		System.out.println("\nServer: " + msg.getText() + '\n');
 	            	}
 	            }
-            });
         }
 	}
 
