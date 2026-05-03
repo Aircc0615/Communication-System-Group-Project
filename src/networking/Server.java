@@ -67,6 +67,7 @@ public class Server {
                 Socket socket = serverSocket.accept(); //blocks until a client connects
                 ClientHandler client = new ClientHandler(socket, this);
                 currentClients.add(client);
+                System.out.println("Number of users connected: " + currentClients.size());
                 (new Thread(client)).start();
             }
         } catch (Exception e) {
