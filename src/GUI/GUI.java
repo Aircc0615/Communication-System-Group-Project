@@ -113,12 +113,17 @@ public class GUI {
 	     formPanel.add(passLabel);
 	     formPanel.add(passwordField);
 	     
+	     JPanel buttonPanel = new JPanel();
+	     buttonPanel.setLayout(new GridLayout(2, 1, 0, 8));
+	     buttonPanel.add(submitB);
+	     buttonPanel.add(createNewAccountBtn);
+	     
+	     
 	     //combine login
 	     JPanel mainPanel = new JPanel(new BorderLayout(0, 10));
 	     mainPanel.add(formPanel, BorderLayout.CENTER);
-	     mainPanel.add(submitB, BorderLayout.SOUTH);
-	     
-	     mainPanel.add(createNewAccountBtn, BorderLayout.SOUTH); //this current just stacks the button
+	     mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+	    
 
 	     JPanel centerPanel = new JPanel(new GridBagLayout());
 	     centerPanel.add(mainPanel);
