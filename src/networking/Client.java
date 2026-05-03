@@ -95,7 +95,7 @@ public class Client {
         	if(msg.mainType == MainType.DISPLAY) {
         		if(msg.subType == SubType.ACTUAL_CHAT) {
         			user.addChat(msg.getChat());
-        			updateChatList();
+        			updateChatList(user);
         		}
         	} else if(msg.mainType == MainType.AUTHENTICATION) {
 	          if(msg.subType == SubType.LOGOUT) {
@@ -113,12 +113,36 @@ public class Client {
 	            		System.err.println("Failed message sent sent to " + msg.getChatId());
 	            	} else if (msg.status == Status.SUCCESS){
 	            		user.addMessageToChat(msg.getChatId(), msg.getTextMessage());
-	            		updateChatList();
+	            		updateChatList(user);
 	            		//Put logic here to update gui view of chat/chatlist
 	            		//gui.updatechatlist(msg.getChatId()) <- will update the chat as well
 	            	}
 	            }
-	        }else { 
+	        } else if (msg.mainType == MainType.AUDIT_OPERATION) {
+	        	switch (msg.getSubType()) {
+	        		case SubType.SELECT_USER:
+	        			if(msg.getStatus() != Status.SUCCESS)
+	        				break;
+	        			selectedAuditUser = msg.getUser();
+	        			selectedAuditUser.addChatThreadSafety();
+	        			gui.setNewAuditUser(selectedAuditUser);
+	        			break;
+	        		case SubType.REMOVE_USER_FROM_GC: 
+	        			//add it user logic for updating gc users
+	        			break;
+	        		case SubType.ADD_USER_TO_GC: 
+	        			//add it user logic for updating gc users
+	        			break;
+	        		case SubType.ACTUAL_CHAT: 
+	        			selectedAuditUser.addChat(msg.getChat());
+	        			updateChatList(selectedAuditUser);
+	        			break;
+	        		case SubType.SEND_TEXT_MESSAGE: 
+	            	selectedAuditUser.addMessageToChat(msg.getChatId(), msg.getTextMessage());
+	            	updateChatList(selectedAuditUser);
+	        			break;
+	        	}
+	        } else { 
 	            	if(msg.getUser() != null)
 	            		System.out.println("\n" + msg.getUser().getUsername() + ": " + msg.getText() + '\n'); //display message along with who its from
 	            	else {
@@ -267,7 +291,7 @@ public class Client {
 	
 	// SubType.SELECT_USER
 	public void audit_SelectUser(String username) throws IOException {
-		Message selectedUser = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER , Status.REQUEST, username);
+		Message selectedUser = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER , Status.REQUEST, username, user.getUsername());
 		updateMessageHistory(selectedUser); //store operation in history
 		sendToServer(selectedUser);
 	}
@@ -286,9 +310,13 @@ public class Client {
 		sendToServer(exportLogRequest);
 	}
 	
-	private void updateChatList() {
-	     user.addChatThreadSafety();
-	     gui.reloadChatList();
+	private void updateChatList(User user) {
+     user.addChatThreadSafety();
+     gui.reloadChatList(user);
+	}
+
+	public User getUser() {
+		return user;
 	}
 
 

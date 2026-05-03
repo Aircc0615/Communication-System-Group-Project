@@ -286,6 +286,10 @@ public class ChatList implements Serializable{
 		if(writeMutex == null)
 			writeMutex = new Object();
 		Chat[] tempChats = chats;
+		if(tempChats.length == 0) {
+			tempChats = new Chat[8];
+			return;
+		}
 		for(Chat chat : tempChats) {
 			if(chat != null) {
 				chat.addThreadSafety();

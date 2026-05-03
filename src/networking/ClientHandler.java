@@ -155,6 +155,8 @@ public class ClientHandler implements Runnable{
                 case SubType.EXPORT_CHAT_LOG:
                 	server.handleAuditExportChat(message, this);
                     break;
+                case SubType.EXIT_AUDIT_MODE:
+                	server.handleExitAudit(this);
                 default:
                     System.out.println("Message Object Constructed Incorrectly");
             }
