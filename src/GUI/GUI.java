@@ -34,6 +34,7 @@ public class GUI {
 	public GUI(Client client) throws UnknownHostException, IOException{
 		 buildGUI();
 		 this.client = client;
+		 client.assignGUI(this);
 	 }
 	
 	 public void buildGUI() throws UnknownHostException, IOException {

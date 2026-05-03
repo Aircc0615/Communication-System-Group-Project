@@ -81,10 +81,15 @@ public class Server {
 
     }
     
-    public User authenticateUser(User userToAuthenticate, ClientHandler handler) {
+    public User authenticateUser(User userToAuthenticate, ClientHandler handler) throws IOException {
+    	System.out.println("Authenticating User");
     	User user = userLoginModule.authenticateUser(userToAuthenticate);
-    	if(user != null)
+    	if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
+    		System.out.println("Successful");
+    		Message authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
+    		sendToClient(authenticationResponse, user.getUsername());
+    	}
     	return user;
     }
     
