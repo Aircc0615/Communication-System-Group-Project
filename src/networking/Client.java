@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.SwingUtilities;
+
 import GUI.GUI;
 import chat.Chat;
 import chat.TextMessage;
@@ -124,9 +126,17 @@ public class Client {
 	        		case SubType.SELECT_USER:
 	        			if(msg.getStatus() != Status.SUCCESS)
 	        				break;
-	        			selectedAuditUser = msg.getUser();
-	        			selectedAuditUser.addChatThreadSafety();
-	        			gui.setNewAuditUser(selectedAuditUser);
+	        			tempUser = msg.getUser();
+	        			if (tempUser == null) {
+	        		        break;
+	        		    }
+	        		    tempUser.addChatThreadSafety();
+	        				selectedAuditUser = tempUser;
+
+	        		    SwingUtilities.invokeLater(() -> {
+	        		        gui.setNewAuditUser(selectedAuditUser);
+	        		        gui.reloadChatList(selectedAuditUser);
+	        		    });
 	        			break;
 	        		case SubType.REMOVE_USER_FROM_GC: 
 	        			//add it user logic for updating gc users
@@ -135,12 +145,19 @@ public class Client {
 	        			//add it user logic for updating gc users
 	        			break;
 	        		case SubType.ACTUAL_CHAT: 
-	        			selectedAuditUser.addChat(msg.getChat());
-	        			updateChatList(selectedAuditUser);
+	        			tempUser = selectedAuditUser;
+	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
+	        				break;
+	        			}
+	        			tempUser.addChat(msg.getChat());
+	        			updateChatList(tempUser);
 	        			break;
 	        		case SubType.SEND_TEXT_MESSAGE: 
-	            	selectedAuditUser.addMessageToChat(msg.getChatId(), msg.getTextMessage());
-	            	updateChatList(selectedAuditUser);
+	        			tempUser = selectedAuditUser;
+	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0)
+	        				break;
+	            	tempUser.addMessageToChat(msg.getChatId(), msg.getTextMessage());
+	            	updateChatList(tempUser);
 	        			break;
 	        	}
 	        }
@@ -194,8 +211,10 @@ public class Client {
             actualUser.addChatThreadSafety();
             this.user = actualUser;
             return actualUser;
-        }
-        else {
+        } else if (incomingLoginResponse.status == Status.INVALID) {
+        	System.out.println("User Already Online");
+        	return null;
+				} else {
         	System.out.println("Invalid Login. Please try again.");
         	return null;
         }
@@ -323,9 +342,9 @@ public class Client {
 		sendToServer(exportLogRequest);
 	}
 	
-	private void updateChatList(User user) {
-     user.addChatThreadSafety();
-     gui.reloadChatList(user);
+	private void updateChatList(User inputUser) {
+     inputUser.addChatThreadSafety();
+     SwingUtilities.invokeLater(() -> gui.reloadChatList(inputUser));
 	}
 
 	public User getUser() {
