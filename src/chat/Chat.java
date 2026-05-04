@@ -51,9 +51,12 @@ public class Chat implements Serializable {
 
 	public Chat() {
 		canLoad = true;
+		messages = new TextMessage[50];
+		numMessages = 0;
+		mutexObject = new Object();
 	}
 
-	public boolean loadFile(String pathToFile) {
+	public boolean loadFile(String pathToFile, int chatId) {
 		File chatFile = new File(pathToFile);
 		try {
 			Scanner in = new Scanner(chatFile);
@@ -63,22 +66,37 @@ public class Chat implements Serializable {
 				line = in.nextLine();
 				switch (index) {
 					case 0:
-						
+						memberUsernames = line.split(",");
+						numMembers = memberUsernames.length;
 						break;
 					case 1:
+						if(line.compareTo("PRIVATE") == 0)
+							chatType = ChatType.PRIVATE;
+						else if(line.compareTo("GROUP") == 0)
+							chatType = ChatType.GROUP;
 						break;
 					case 2:
+						newestUpdate = Instant.parse(line);
 						break;
 					case 3:
+						creatorUsername = line;
 						break;
 					default:
+						String[] textMessageInfo = line.split(",");
+						TextMessage messageToAdd = new TextMessage(Integer.parseInt(textMessageInfo[0]),
+								textMessageInfo[1],textMessageInfo[2],Instant.parse(textMessageInfo[3]));
+						addMessage(messageToAdd);
 						break;
 				}
 			}
+			this.chatId = chatId;
+			if(count < chatId)
+				count = chatId;
+			in.close();
+			return true;
 		} catch(Exception e) {
 			return false;
 		}
-		return false;
 	}
 
 	private Chat(TextMessage[] messages, int numMessages, String[] memberUsernames, 

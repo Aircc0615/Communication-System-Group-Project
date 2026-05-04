@@ -11,7 +11,7 @@ public class TextMessage implements Serializable{
 	private Instant timestamp;
 
 	//Constructor for existing textmessages
-	public TextMessage(String text, String username, int userId, Instant timestamp) {
+	public TextMessage(int userId, String username, String text, Instant timestamp) {
 		this.text = text;
 		this.username = username;
 		this.userId = userId;
