@@ -1,17 +1,17 @@
 package networking;
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.HashSet;
 
 import chat.Chat;
 import chat.ChatList;
 import chat.ChatType;
 import chat.TextMessage;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import user.User;
 import user.UserLoginModule;
 
@@ -61,6 +61,7 @@ public class Server {
     	ServerSocket serverSocket = null;
         try {
             serverSocket = new ServerSocket(7777);
+			createGUI(serverSocket);
             System.out.println("Server is now awaiting a new connection");
 
             while (true) {
@@ -83,6 +84,27 @@ public class Server {
 
     }
     
+	private void createGUI(ServerSocket serverSocket){
+		javax.swing.JFrame frame = new javax.swing.JFrame("Server");
+		frame.setSize(300,120);
+		frame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+
+		javax.swing.JButton shutdownButton = new javax.swing.JButton("shut down the Server!");
+		shutdownButton.addActionListener(e ->{
+			try{
+				serverSocket.close();
+			}catch(IOException ex){
+				System.out.println("Failed to close server socket.");
+			}
+			frame.dispose();
+			System.exit(0);
+		});
+		frame.add(shutdownButton);
+		frame.setVisible(true);
+		
+	}
+
+
     public User authenticateUser(User userToAuthenticate, ClientHandler handler) throws IOException {
     	System.out.println("Authenticating User");
     	User user = userLoginModule.authenticateUser(userToAuthenticate);
