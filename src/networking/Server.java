@@ -85,11 +85,16 @@ public class Server {
     
     public User authenticateUser(User userToAuthenticate, ClientHandler handler) throws IOException {
     	System.out.println("Authenticating User");
+    	boolean userAlreadyOnline = false;
     	if(mapUsernameToClient.containsKey(userToAuthenticate.getUsername()))
-    		return null;
+    		userAlreadyOnline = true;
     	User user = userLoginModule.authenticateUser(userToAuthenticate);
     	Message authenticationResponse;
-    	if(user != null) {
+    	if (userAlreadyOnline) {
+    		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.INVALID);
+    		handler.sendToClient(authenticationResponse);
+    		return null;
+    	} else if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
     		System.out.println( "\n" + user.getUsername() + "Successful login!");
     		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);

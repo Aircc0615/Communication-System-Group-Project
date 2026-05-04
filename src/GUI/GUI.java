@@ -630,7 +630,7 @@ public class GUI {
 			 createMainFrame();
 		 }
 		 else {
-			 JOptionPane.showMessageDialog(loginFrame, "Login failed! Invalid username/password.");
+			 JOptionPane.showMessageDialog(loginFrame, "Login failed! Invalid username/password, or the User is already online!");
 		 }
 
 		 

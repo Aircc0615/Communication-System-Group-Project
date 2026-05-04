@@ -199,8 +199,10 @@ public class Client {
             actualUser.addChatThreadSafety();
             this.user = actualUser;
             return actualUser;
-        }
-        else {
+        } else if (incomingLoginResponse.status == Status.INVALID) {
+        	System.out.println("User Already Online");
+        	return null;
+				} else {
         	System.out.println("Invalid Login. Please try again.");
         	return null;
         }
