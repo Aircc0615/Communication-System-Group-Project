@@ -92,7 +92,7 @@ public class Server {
     	Message authenticationResponse;
     	if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
-    		System.out.println( "\n" + user.getUsername() + "Successful login!");
+    		System.out.println( "\n" + user.getUsername() + " successfully logged in.");
     		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
     		sendToClient(authenticationResponse, user.getUsername());
     	} else {
@@ -246,10 +246,16 @@ public class Server {
 		try {
 			chats.addChatMember(chatId, userToAdd, chatOwner);
 			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.SUCCESS, "", chatOwner, chatId);
+			
+			Chat updatedChat = chats.getCopyOfChat(chatId);
+			Message updatedChatForUserUI = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, updatedChat);
+			sendToClient(updatedChatForUserUI, userToAdd);
+			
 		} catch(Exception e) {
 			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.FAILED);
 		}
 		sendToClient(messageToSend, userToAdd);
+		sendToClient(messageToSend, chatOwner);
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
@@ -261,12 +267,24 @@ public class Server {
 		
 		try {
 			chats.removeChatMember(chatId, userToRemove, chatOwner);
-			usernameToUser.get(userToRemove).removeChat(chatId, chatOwner);
+			
+			User userBeingRemoved = usernameToUser.get(userToRemove);
+			if (userBeingRemoved == null) {
+				msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.FAILED);
+				sendToClient(msgToSend, chatOwner);
+				return;
+			}
+
+			userBeingRemoved.removeChat(chatId, chatOwner);
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.SUCCESS, "", chatOwner, chatId);
+			sendToClient(msgToSend, userToRemove);
+			sendToClient(msgToSend, chatOwner);
+
 		} catch(IndexOutOfBoundsException e) {
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.FAILED);
+			sendToClient(msgToSend, userToRemove);
 		}
-		sendToClient(msgToSend, userToRemove);
+		
 	}
 	
 	// SubType.DELETE_GC

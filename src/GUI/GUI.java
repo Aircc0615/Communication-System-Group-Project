@@ -323,7 +323,9 @@ public class GUI {
 		     String username = JOptionPane.showInputDialog(mainFrame, "Enter username to add:");
 		     if (username != null && !username.trim().isEmpty()) {
 		         try {
-		             addUserToChat(username.trim());
+		             addUserToChat(username.trim(), currentChatId);
+		             reloadChatList(user);
+		             JOptionPane.showMessageDialog(mainFrame, "User added to chat.");
 		         } catch (IOException ex) {
 		             JOptionPane.showMessageDialog(mainFrame, "Failed to add user.");
 		             ex.printStackTrace();
@@ -335,7 +337,8 @@ public class GUI {
 		     String username = JOptionPane.showInputDialog(mainFrame, "Enter username to remove:");
 		     if (username != null && !username.trim().isEmpty()) {
 		         try {
-		             removeUserFromChat(username.trim());
+		             removeUserFromChat(username.trim(), currentChatId);
+		             reloadChatList(user);
 		             JOptionPane.showMessageDialog(mainFrame, "User removed from chat.");
 		         } catch (IOException ex) {
 		             JOptionPane.showMessageDialog(
@@ -687,13 +690,13 @@ public class GUI {
 	 }
 	
 	// SubType.ADD_USER_TO_GC
-	private void addUserToChat(String username) throws IOException {
-		 client.addUserToChat(username);
+	private void addUserToChat(String username, int chatID) throws IOException {
+		 client.addUserToChat(username, chatID);
 	 }
 	 
 	// SubType.REMOVE_USER_FROM_GC
-	 private void removeUserFromChat(String username) throws IOException {
-		 client.removeUserFromChat(username);
+	 private void removeUserFromChat(String username, int chatID) throws IOException {
+		 client.removeUserFromChat(username, chatID);
 	 }
 	 
 	// SubType.DELETE_GC
