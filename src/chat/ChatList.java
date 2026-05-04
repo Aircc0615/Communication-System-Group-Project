@@ -285,6 +285,14 @@ public class ChatList implements Serializable{
 		return tempChats[chatIndex].getMembersInChat();
 	}
 
+	public boolean containsChat(int chatId) {
+		Chat[] tempChats = chats;
+		int chatIndex = parseId(tempChats, chatId);
+		if(chatIndex == -1)
+			return false;
+		return true;
+	}
+
 	public void addThreadSafety() {
 		if(writeMutex == null)
 			writeMutex = new Object();

@@ -88,6 +88,7 @@ public class Chat implements Serializable {
 						addMessage(messageToAdd);
 						break;
 				}
+				index++;
 			}
 			this.chatId = chatId;
 			if(count < chatId)

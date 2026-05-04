@@ -36,7 +36,6 @@ public class UserLoginModule {
 			return null;
 		}
 		User newUser = new User(user.getUsername(), user.getPassword());
-		users.add(newUser);
 		usernameToUser.put(username, newUser);
 		return newUser;
 	}

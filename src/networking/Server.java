@@ -4,6 +4,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +41,8 @@ public class Server {
     	usernameToUser = new HashMap();
     	userLoginModule = new UserLoginModule(usernameToUser, users); 
     	Server server = new Server();
-    	server.createTestUsers();
+    	server.load();
+    	//server.createTestUsers();
     	server.createSavingThread();
     	server.startServer();
     }
@@ -459,10 +461,137 @@ public class Server {
 		for(User user : users) {
 			user.exportUserChatList();
 		}
+		saveUsers();
+	}
+
+	private void saveUsers() {
+		String usersFileContents = "";
+		int index = 0;
+		for(User user : users) {
+			if (index != 0)
+				usersFileContents += '\n';
+			usersFileContents += user.toString();
+			index++;
+		}
+		String localPath = "";
+		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
+			localPath = "../";
+		}
+		File usersDir= new File(localPath + "LocalFiles/Users");
+		usersDir.mkdirs();
+		File usersFile = new File(localPath + "LocalFiles/Users/Users.txt");
+		usersFile.delete();
+		try {
+			usersFile.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(usersFile);
+			writer.write(usersFileContents);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(writer != null) writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private synchronized void load() {
-		
+		String localPath = "";
+		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
+			localPath = "../";
+		}
+		File serverChatIdsDir = new File(localPath + "LocalFiles/Server/ChatIds");
+		if(!serverChatIdsDir.mkdirs()) {
+			File serverChatIdsFile = new File(localPath + "LocalFiles/Server/ChatIds/ChatIds.txt");
+			try {
+				if(!serverChatIdsFile.createNewFile()) {
+					Scanner in = null;
+					try {
+						in = new Scanner(serverChatIdsFile);
+						if(in.hasNextLine()) {
+							String line = in.nextLine();
+							String[] chatIds = line.split(",");
+							for(String chatName : chatIds) {
+								int chatId = Integer.parseInt(chatName);
+								Chat chat = new Chat();
+								boolean loadedProperly = chat.loadFile((localPath + "LocalFiles/Server/Chats/Chat_" + chatId + ".txt"), chatId);
+								if(loadedProperly) {
+									chats.addChat(chat);
+								}
+							}
+						}
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} finally {
+						if (in != null) {
+							in.close();
+						}
+					}
+				}
+			} catch (NumberFormatException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		File serverUsersDir = new File(localPath + "LocalFiles/Users");
+		if(!serverUsersDir.mkdirs()) {
+			File serverUsersFile = new File(localPath + "LocalFiles/Users/Users.txt");
+			try {
+				if(!serverUsersFile.createNewFile()) {
+					Scanner in = null;
+					try {
+						in = new Scanner(serverUsersFile);
+						String line;
+						while(in.hasNextLine()) {
+							line = in.nextLine();
+							try {
+								User user = new User(line);
+								users.add(user);
+								usernameToUser.put(user.getUsername(), user);
+								File chatIds = new File(localPath + "LocalFiles/Users/" + user.getUsername() + "/ChatIds/ChatIds.txt");
+								if(!chatIds.createNewFile()) {
+									Scanner chatIn = null;
+									try {
+										chatIn = new Scanner(chatIds);
+										if(chatIn.hasNextLine()) {
+											String chatline = chatIn.nextLine();
+											String[] stringIds = chatline.split(",");
+											for(String sid : stringIds) {
+												int id = Integer.parseInt(sid);
+												if(chats.containsChat(id)) {
+													chats.insertChatToOneList(user.getChatList(), id);
+												}
+											}
+										}
+									} catch (Exception e){
+										e.printStackTrace();
+									} finally {
+										if(chatIn != null)
+											chatIn.close();
+									}
+								} else {System.out.println("Failed to find chat ids file");}
+							} catch (Exception e) {
+								continue;
+							}
+						}
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} finally {
+						if(in != null)
+							in.close();
+					}
+					
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
 
