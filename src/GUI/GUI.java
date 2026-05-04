@@ -11,10 +11,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import javax.swing.*;
 
 import chat.Chat;
+import chat.TextMessage;
 import networking.Client;
 import user.User;
 
@@ -173,7 +175,7 @@ public class GUI {
 		
 		
 		 if(auditMode == true) {
-			 JLabel selectUserLabel = new JLabel("               Select User" );
+			 JLabel selectUserLabel = new JLabel("                  Select User" );
 			
 			 selectUserLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 			 selectUserLabel.setOpaque(true); 
@@ -218,7 +220,6 @@ public class GUI {
 					 }
 				    }
 			 });
-			
 			 addChatPanel.add(newChatLabel);
 		 }
 		
@@ -245,7 +246,6 @@ public class GUI {
 	     textPanel.setPreferredSize(new Dimension(130, 40));
 	     textPanel.setOpaque(false);
 	     
-	     
 		 JLabel pic = new JLabel();
 	     pic.setPreferredSize(new Dimension(40, 30));
 	     pic.setBackground(new Color(255, 192, 203));
@@ -269,24 +269,15 @@ public class GUI {
 	    	 public void mouseClicked(MouseEvent e) {
 	    		 createProfileMenu().show(leftBottomPane, e.getX(), e.getY());
 	    	 }
-
-			 
 	     });
-	     
-	     
-	     
-	     
 	     
 	     leftPanel.add(addChatPanel);
 		 leftPanel.add(optionScrollPane);
 		 leftPanel.add(leftBottomPane);
 		 
 		 
-		 
 		 //adding to main frame
 		 mainFrame.add(leftPanel, BorderLayout.WEST);
-	     
-		 
 	 }
 	 
 	 private void createRightMainPanel() {
@@ -445,34 +436,35 @@ public class GUI {
 		 panel1.removeAll();
 		 currentChatId = chatId;
 		 Chat chat = user.getCopyOfChat(chatId);
-		 for(int i = 0; i< chat.getNumMessages(); i++) {
+		 for(int i = 0; i < chat.getNumMessages(); i++) {
 			 
-			 JPanel msgPanel = new JPanel(new BorderLayout());
-		 
-			 JTextArea textArea = new JTextArea(chat.getMessage(i).getText());
-			 textArea.setBorder(BorderFactory.createTitledBorder(chat.getMessage(i).getUsername()));	
-			 textArea.setLineWrap(true);
-			 textArea.setWrapStyleWord(true);
-			 textArea.setEditable(false);
-			 
-			 textArea.setColumns(15);  
-			 //textArea.setRows(5);
-			 textArea.setSize(textArea.getPreferredSize());
-			 msgPanel.setMaximumSize(msgPanel.getPreferredSize());
-			 
-			 if(chat.getMessage(i).getUsername().equals(user.getUsername())) {
-				 msgPanel.add(textArea, BorderLayout.EAST);
-				 
-			 }else {
-				 msgPanel.add(textArea, BorderLayout.WEST);
-				 
-				 
-			 }
-			 
-			 msgPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, msgPanel.getPreferredSize().height));
-			 //msgPanel.setMaximumSize(msgPanel.getPreferredSize());
-			 panel1.add(msgPanel);
-		 }
+			    JPanel msgPanel = new JPanel(new BorderLayout());
+
+			    TextMessage msg = chat.getMessage(i);
+
+			    JTextArea textArea = new JTextArea(msg.getText());
+			    textArea.setBorder(BorderFactory.createTitledBorder(msg.getUsername() + " - " + msg.getTimeSent()));	
+
+			    textArea.setLineWrap(true);
+			    textArea.setWrapStyleWord(true);
+			    textArea.setEditable(false);
+
+			    textArea.setColumns(15);  
+			    textArea.setSize(textArea.getPreferredSize());
+			    msgPanel.setMaximumSize(msgPanel.getPreferredSize());
+
+			    if(msg.getUsername().equals(user.getUsername())) {
+			        msgPanel.add(textArea, BorderLayout.EAST);
+			    } else {
+			        msgPanel.add(textArea, BorderLayout.WEST);
+			    }
+
+			    msgPanel.setMaximumSize(
+			        new Dimension(Integer.MAX_VALUE, msgPanel.getPreferredSize().height)
+			    );
+
+			    panel1.add(msgPanel);
+			}
 		 panel1.revalidate();
 		 panel1.repaint();
 		 scrollToBottom();
@@ -516,7 +508,6 @@ public class GUI {
 				logoutUser();
 				mainFrame.dispose();
 			} catch (ClassNotFoundException | IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		
@@ -548,7 +539,6 @@ public class GUI {
 				 try {
 					handleCreateChat(usernames);
 				 } catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				 }
 			 }
@@ -598,10 +588,39 @@ public class GUI {
 		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
 		 
 		 int[] chatIds = user.getChatIds();
+		 int groupNumber = 1;
+		 
 		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
-			    //final Chat currentChat = chat;
-			 		int chatId = chatIds[i];
-			    JButton chatButton = new JButton("Chat " + chatId);
+		        int chatId = chatIds[i];
+
+		        Chat chat = user.getCopyOfChat(chatId);
+
+		        ArrayList<String> otherUsers = new ArrayList<>();
+
+		        for (int j = 0; j < chat.getNumMessages(); j++) {
+		            TextMessage msg = chat.getMessage(j);
+		            String name = msg.getUsername();
+
+		            System.out.println("Message username: " + name);
+		            System.out.println("Current user: " + user.getUsername());
+		            
+		            if (!name.equals(user.getUsername()) && !otherUsers.contains(name)) {
+		                otherUsers.add(name);
+		            }
+		        }
+
+		        String chatName;
+
+		        if (otherUsers.size() == 1) {
+		            chatName = otherUsers.get(0);
+		        } else if (otherUsers.size() > 1) {
+		            chatName = "Group " + groupNumber;
+		            groupNumber++;
+		        } else {
+		            chatName = "Chat " + chatId;
+		        }
+		        
+			    JButton chatButton = new JButton(chatName);
 			    chatButton.setMaximumSize(new Dimension(220, 40));
 
 			    chatButton.addActionListener(e -> {

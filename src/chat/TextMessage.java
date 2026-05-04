@@ -1,6 +1,8 @@
 package chat;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class TextMessage implements Serializable{
 	private String text;
@@ -40,5 +42,13 @@ public class TextMessage implements Serializable{
 	
 	public Instant getTimestamp() {
 		return timestamp;
+	}
+
+
+	public String getTimeSent() {
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a")
+	            .withZone(ZoneId.systemDefault());
+
+	    return formatter.format(timestamp);
 	}
 }	
