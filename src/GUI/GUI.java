@@ -593,6 +593,9 @@ public class GUI {
 		 
 		 return chatOption;
 	 }
+	 public void removeCurrentChat() {
+		 currentChatId = -1;
+	 }
 	 private void setCurrentChat(int chatId) {
 		    currentChatId = chatId;
 		    chatHeaderButton.setText("Chat ID: " + chatId);

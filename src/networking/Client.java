@@ -96,8 +96,11 @@ public class Client {
         		gui.forceExit();
         	} else if(msg.mainType == MainType.DISPLAY) {
         		if(msg.subType == SubType.ACTUAL_CHAT) {
-        			user.addChat(msg.getChat());
-        			updateChatList(user);
+        			System.out.println("Got Chat");
+        			Chat chat = msg.getChat();
+        			chat.addThreadSafety();
+        			user.addChat(chat.getCopy());
+        			SwingUtilities.invokeLater(() -> updateChatList(user));
         		}
         	} else if(msg.mainType == MainType.AUTHENTICATION) {
 	          if(msg.subType == SubType.LOGOUT) {
@@ -115,7 +118,7 @@ public class Client {
 	            		System.err.println("Failed message sent sent to " + msg.getChatId());
 	            	} else if (msg.status == Status.SUCCESS){
 	            		user.addMessageToChat(msg.getChatId(), msg.getTextMessage());
-	            		updateChatList(user);
+	            		SwingUtilities.invokeLater(() -> updateChatList(user));
 	            	}
 	            }
 	        } 
@@ -140,46 +143,52 @@ public class Client {
 	        			break;
 	        		case SubType.REMOVE_USER_FROM_GC: 
 	        			tempUser = selectedAuditUser;
-	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
+	        			if(tempUser.getUsername().compareTo(msg.getText()) != 0) {
 	        				break;
 	        			}
-	        			tempUser.addChat(msg.getChat());
-	        			updateChatList(tempUser);
+	        			tempUser.removeChat(msg.getChatId(), msg.getUsername());
+	            	SwingUtilities.invokeLater(() -> {
+	            		gui.removeCurrentChat();
+	            		updateChatList(tempUser);
+	            	});
 	        			break;
 	        		case SubType.ADD_USER_TO_GC: 
 	        			tempUser = selectedAuditUser;
 	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
 	        				break;
 	        			}
-	        			tempUser.removeChat(msg.getChatId(), msg.getUsername());
-	        			updateChatList(tempUser);
+	        			tempUser.getChatList().addChatMember(msg.getChatId(), msg.getText(), msg.getUsername());
+	            	SwingUtilities.invokeLater(() -> updateChatList(tempUser));
 	        			break;
 	        		case SubType.ACTUAL_CHAT: 
 	        			tempUser = selectedAuditUser;
 	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
 	        				break;
 	        			}
-	        			tempUser.addChat(msg.getChat().getCopy());
-	        			updateChatList(tempUser);
+	        			Chat chat = msg.getChat();
+	        			chat.addThreadSafety();
+	        			tempUser.addChat(chat.getCopy());
+	            	SwingUtilities.invokeLater(() -> updateChatList(tempUser));
 	        			break;
 	        		case SubType.SEND_TEXT_MESSAGE: 
 	        			tempUser = selectedAuditUser;
 	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0)
 	        				break;
 	            	tempUser.addMessageToChat(msg.getChatId(), msg.getTextMessage());
-	            	updateChatList(tempUser);
+	            	SwingUtilities.invokeLater(() -> updateChatList(tempUser));
 	        			break;
 	        	}
 	        }
         	else if(msg.mainType == MainType.CHAT_OPERATION) {
         		switch (msg.getSubType()) {
 	        		case SubType.ADD_USER_TO_GC:
-	        			user.addChat(msg.getChat());
-	        			updateChatList(user);
 	        			break;
 	        		case SubType.REMOVE_USER_FROM_GC:
 	        			user.removeChat(msg.getChatId(), msg.getUsername());
-	        			updateChatList(user);
+	            	SwingUtilities.invokeLater(() -> {
+	            		gui.removeCurrentChat();
+	            		updateChatList(user);
+	            	});
 	        			break;
         		}
         	}
@@ -352,7 +361,7 @@ public class Client {
 	
 	private void updateChatList(User inputUser) {
      inputUser.addChatThreadSafety();
-     SwingUtilities.invokeLater(() -> gui.reloadChatList(inputUser));
+     gui.reloadChatList(inputUser);
 	}
 
 	public User getUser() {

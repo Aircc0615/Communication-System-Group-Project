@@ -301,6 +301,12 @@ public class User implements Serializable {
     public void removeChatMember(int chatId, String memberUsername, String fromUsername){
         chatList.removeChatMember(chatId,memberUsername, fromUsername);
     }
+
+    public void removeChatMemberClientSide(int chatId, String memberUsername, String fromUsername) {
+    		removeChatMember(chatId, memberUsername, fromUsername);
+    		if(memberUsername == username)
+    			chatList.deleteChat(chatId, fromUsername);
+    }
     
     
     
