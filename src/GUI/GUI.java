@@ -526,15 +526,15 @@ public class GUI {
 		});
 		
 		//profile.add(myProfile);
-	    if(user.isInformationTechnologyUser()) {
-	    	if(auditMode == false) {
-	    		profile.add(audit);
-			    profile.addSeparator();
-	    	}else {
+			if(auditMode == true) {
 	    		profile.add(exitAudit);
 	    		profile.addSeparator();
-	    	}
-	    }
+			} else {
+				if(user.isInformationTechnologyUser()) {
+	    		profile.add(audit);
+			    profile.addSeparator();
+				}
+			}
 	    profile.add(logout);
 	    
 		
@@ -610,9 +610,10 @@ public class GUI {
 		        } catch(IndexOutOfBoundsException e) {continue;}
 
 		        ArrayList<String> otherUsers = new ArrayList<>();
+		        String[] memberUsernames = chat.getMembersInChat();
 
 		        for (int j = 0; j < chat.getNumMembers(); j++) {
-		            String name = chat.getMemberUsername(j);
+		            String name = memberUsernames[j];
 
 		            if (!name.equals(user.getUsername()) && !otherUsers.contains(name)) {
 		                otherUsers.add(name);
