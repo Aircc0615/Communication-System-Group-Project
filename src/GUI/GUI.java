@@ -9,6 +9,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -151,6 +153,20 @@ public class GUI {
 		 
 		 mainFrame.setSize(750, 700);
 		 mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		 mainFrame.addWindowListener(new WindowAdapter() {
+			 public void windowClosing(WindowEvent event) {
+				 try {
+					 logoutUser();
+					 Thread.sleep(300);
+				 } catch(Exception e) {
+					 e.printStackTrace();
+				 }
+			 
+				 mainFrame.dispose();
+				 System.exit(0);
+			 }
+		 });
+		 
 		 //mainFrame.setLocationRelativeTo(null);
 		 mainFrame.setResizable(false);
 		 
@@ -567,9 +583,9 @@ public class GUI {
 		    
 		    boolean isCreator = isCurrentUserCreator(chatId);
 
-		    addUserItem.setEnabled(isCreator);
-		    removeUserItem.setEnabled(isCreator);
-		    deleteChatItem.setEnabled(isCreator);
+		    addUserItem.setVisible(isCreator);
+		    removeUserItem.setVisible(isCreator);
+		    deleteChatItem.setVisible(isCreator);
 		}
 	 
 	 private boolean isCurrentUserCreator(int chatId) {
