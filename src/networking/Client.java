@@ -120,8 +120,8 @@ public class Client {
 	            		//gui.updatechatlist(msg.getChatId()) <- will update the chat as well
 	            	}
 	            }
-	        } else if (msg.mainType == MainType.AUDIT_OPERATION) {
-	        	User tempUser;
+	        } 
+	        else if (msg.mainType == MainType.AUDIT_OPERATION) {
 	        	switch (msg.getSubType()) {
 	        		case SubType.SELECT_USER:
 	        			if(msg.getStatus() != Status.SUCCESS)
@@ -160,7 +160,19 @@ public class Client {
 	            	updateChatList(tempUser);
 	        			break;
 	        	}
-	        } else { 
+	        }
+        	else if(msg.mainType == MainType.CHAT_OPERATION) {
+        		switch (msg.getSubType()) {
+	        		case SubType.ADD_USER_TO_GC:
+	        			
+	        			break;
+	        		case SubType.REMOVE_USER_FROM_GC:
+	        			user.removeChat(msg.getChatId(), msg.getUsername());
+	        			updateChatList(user);
+	        			break;
+        		}
+        	}
+	        else { 
 	            	if(msg.getUser() != null)
 	            		System.out.println("\n" + msg.getUser().getUsername() + ": " + msg.getText() + '\n'); //display message along with who its from
 	            	else {
@@ -270,15 +282,15 @@ public class Client {
 	}
 	
 	// SubType.ADD_USER_TO_GC
-	public void addUserToChat(String username) throws IOException {
-		Message addUserToGC = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC , Status.REQUEST, username, user);
+	public void addUserToChat(String userToAdd, int chatID) throws IOException {
+		Message addUserToGC = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC , Status.REQUEST, userToAdd, user, chatID);
 		updateMessageHistory(addUserToGC); //store operation in history
 		sendToServer(addUserToGC);
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
-	public void removeUserFromChat(String username) throws IOException {
-		Message removeUserFromGC = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC , Status.REQUEST, username, user);
+	public void removeUserFromChat(String userToRemove, int chatID) throws IOException {
+		Message removeUserFromGC = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC , Status.REQUEST, userToRemove, user, chatID);
 		updateMessageHistory(removeUserFromGC); //store operation in history
 		sendToServer(removeUserFromGC);
 	}
