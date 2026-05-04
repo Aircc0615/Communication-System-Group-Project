@@ -26,13 +26,33 @@ public class Server {
 	private HashMap<ClientHandler, String> mapITClientToUsername = new HashMap();
 	private HashMap<String, User> usernameToUser = new HashMap();
 	private UserLoginModule userLoginModule = new UserLoginModule(usernameToUser); 
+	private Thread saver;
+	private boolean stillSaving;
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {
     	Server server = new Server();
     	server.createTestUsers();
+    	server.createSavingThread();
     	server.startServer();
     }
     
+    public void createSavingThread() {
+    	stillSaving = true;
+    	saver = new Thread(new Runnable() {
+    		public void run() {
+    			while(stillSaving) {
+    				save();
+    				try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+    			}
+    		}
+    	});
+    	saver.start();
+    }
+
     //used to test GUI
     public void createTestUsers() {
     	User user1 = new User("1", "1", true);
@@ -422,6 +442,14 @@ public class Server {
 			System.out.println(users.get(i).getUsername());
 		}
 		
+	}
+
+	public synchronized void save() {
+		System.out.println("Attempting to save");
+		chats.exportChatList(null);
+		for(User user : users) {
+			user.exportUserChatList();
+		}
 	}
 }
 

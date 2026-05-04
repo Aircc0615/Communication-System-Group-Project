@@ -277,12 +277,8 @@ public class Chat implements Serializable {
 		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
 			localPath = "../";
 		}
-		File exportDir = new File(localPath + "LocalFiles");
-		exportDir.mkdir();
-		File folderNameDir = new File(localPath + "LocalFiles/" + folderName);
-		folderNameDir.mkdir();
 		File chatDir = new File(localPath + "LocalFiles/" + folderName + "/Chats");
-		chatDir.mkdir();
+		chatDir.mkdirs();
 		File chatFile = new File(localPath + "LocalFiles/" + folderName + "/Chats/Chat_" + chatId + ".txt");
 		chatFile.delete();
 		chatFile.createNewFile();
