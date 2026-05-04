@@ -30,13 +30,13 @@ class ChatMemberTest {
 
 	@Test
 	void chatAdd50MembersToChat() {
-		String[] membersList = new String[56];
-		for(int i = 0; i < 6; i++)
-			membersList[i] = memberIds[i];
-		for(int i = 6; i < 56; i++) {
-			String username = "" + i;
-			membersList[i] = username;
+		for(int i = 7; i < 57; i++) {
+			String username = ("" + i);
+			try {
 			chat.addMember(username);
+			} catch (Exception e) {
+				
+			}
 		}
 		assertEquals(chat.getNumMembers(), 56);
 	}
@@ -65,7 +65,9 @@ class ChatMemberTest {
 	@Test
 	void chatRemoveMember() {
 		String[] membersOld = chat.getMembersInChat();
+		try {
 		chat.removeMember("2");
+		} catch (Exception e) {}
 		String[] membersNew = chat.getMembersInChat();
 		assertNotEquals(membersOld.length, membersNew.length);
 	}

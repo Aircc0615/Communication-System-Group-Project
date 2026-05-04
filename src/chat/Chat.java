@@ -171,9 +171,15 @@ public class Chat implements Serializable {
 	// adds a new member to the chat
 	public void addMember(String username) {
 		synchronized (mutexObject) {
-			for(String name : memberUsernames)
-				if(name.compareTo(username) == 0)
+			int index = 0;
+			for(String name : memberUsernames) {
+				if(index >= numMembers)
+					break;
+				if(name.compareTo(username) == 0) {
 					throw new IllegalArgumentException();
+				}
+				index++;
+			}
 			if (numMembers >= memberUsernames.length) { // makes space if need be (2x)
 				String[] newMemberUsernames = new String[memberUsernames.length * 2];
 				for (int i = 0; i < memberUsernames.length; i++) {
@@ -209,23 +215,27 @@ public class Chat implements Serializable {
 	// removes the member from the chat
 	public void removeMember(String username) {
 		synchronized (mutexObject) {
-			if (username == creatorUsername)
+			if (username == creatorUsername) {
+				System.out.println("creator");
 				throw new IllegalArgumentException();
+			}
 			int indexInArray = 0;
 			while (indexInArray < numMembers) { // attempts to find the member
-				if (memberUsernames[indexInArray] == username) {
+				if (memberUsernames[indexInArray].compareTo(username) == 0) {
+					System.out.println("found");
 					break;
 				}
 				indexInArray++;
 			}
-			if (indexInArray >= numMembers) {
+			if (indexInArray == numMembers) {
+				System.out.println("not found");
 				return; // return if not found
 			}
 			// shift array down if found
 			for (int i = indexInArray; i < (numMembers - 1); i++) {
 				memberUsernames[i] = memberUsernames[i + 1];
 			}
-			numMembers--; // decrement
+			numMembers--;
 		}
 	}
 
