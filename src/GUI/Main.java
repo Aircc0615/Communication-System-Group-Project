@@ -17,7 +17,7 @@ public class Main {
 		GUI userGUI1 = new GUI(client1);
 		
 		
-		Client client2 = new Client();
+		/*Client client2 = new Client();
 		GUI userGUI2 = new GUI(client2);
 		
 		Client client3 = new Client();
@@ -25,7 +25,7 @@ public class Main {
 		
 		
 		Client client4 = new Client();
-		GUI userGUI4 = new GUI(client4);
+		GUI userGUI4 = new GUI(client4);*/
 	}
 
 }

@@ -654,7 +654,7 @@ public class GUI {
 		        if (otherUsers.size() == 1) {
 		            chatName = otherUsers.get(0);
 		        } else if (otherUsers.size() > 1) {
-		            chatName = "Group " + groupNumber;
+		            chatName = "Group " + chatId;
 		            groupNumber++;
 		        } else {
 		            chatName = "Chat " + chatId;
@@ -717,6 +717,11 @@ public class GUI {
 	 // SubType.LOGOUT
 	 private void logoutUser() throws ClassNotFoundException, IOException {
 		 client.logout();
+	 }
+
+	 public void forceExit() {
+		 JOptionPane.showMessageDialog(null, "Server Closed.");
+		 System.exit(0);
 	 }
 	 
 	// SubType.CREATE_USER

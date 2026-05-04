@@ -1,5 +1,6 @@
 package networking;
 public enum SubType {
+		EXIT, //server exit
     LOGIN, LOGOUT, LOGIN_RESPONSE, CREATE_USER,//authentication
     OPEN_CHAT, CHAT_LIST, CREATE_GC, ADD_USER_TO_GC, REMOVE_USER_FROM_GC, DELETE_GC, //chat operations
     SEND_TEXT_MESSAGE, // Text

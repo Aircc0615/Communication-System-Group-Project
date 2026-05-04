@@ -73,7 +73,7 @@ public class ClientHandler implements Runnable{
             System.out.println("Closing Client Socket.");
             clientSocket.close();
         } catch (Exception e){
-            e.printStackTrace();
+        	server.removeClient(username);
         }
     }
     

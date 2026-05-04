@@ -13,8 +13,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import user.User;
 import user.UserLoginModule;
 
@@ -30,17 +28,17 @@ public class Server {
 	private static HashMap<String, User> usernameToUser;
 	private static UserLoginModule userLoginModule; 
 	private static Thread saver;
-	private static boolean stillSaving;
+	private static boolean serverOnline;
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {
     	users = new ArrayList<>();
     	chats = new ChatList();
     	onlineUsers = new ArrayList<>();
     	currentClients = new ArrayList<>();
-    	mapUsernameToClient = new HashMap();
-    	mapUsernameToITClient = new HashMap();
-    	mapITClientToUsername = new HashMap();
-    	usernameToUser = new HashMap();
+    	mapUsernameToClient = new HashMap<String, ClientHandler>();
+    	mapUsernameToITClient = new HashMap<String, Set<ClientHandler>>();
+    	mapITClientToUsername = new HashMap<ClientHandler, String>();
+    	usernameToUser = new HashMap<String, User>();
     	userLoginModule = new UserLoginModule(usernameToUser, users); 
     	Server server = new Server();
     	server.load();
@@ -50,10 +48,10 @@ public class Server {
     }
     
     public void createSavingThread() {
-    	stillSaving = true;
+    	serverOnline = true;
     	saver = new Thread(new Runnable() {
     		public void run() {
-    			while(stillSaving) {
+    			while(serverOnline) {
     				save();
     				try {
 							Thread.sleep(10000);
@@ -94,10 +92,10 @@ public class Server {
     	ServerSocket serverSocket = null;
         try {
             serverSocket = new ServerSocket(7777);
-			createGUI(serverSocket);
+            createGUI(serverSocket);
             System.out.println("Server is now awaiting a new connection");
 
-            while (true) {
+            while (serverOnline) {
                 Socket socket = serverSocket.accept(); //blocks until a client connects
                 ClientHandler client = new ClientHandler(socket, this);
                 currentClients.add(client);
@@ -125,13 +123,8 @@ public class Server {
 
 		javax.swing.JButton shutdownButton = new javax.swing.JButton("shut down the Server!");
 		shutdownButton.addActionListener(e ->{
-			try{
-				serverSocket.close();
-			}catch(IOException ex){
-				System.out.println("Failed to close server socket.");
-			}
 			frame.dispose();
-			System.exit(0);
+			exitServer(serverSocket);
 		});
 		frame.add(shutdownButton);
 		frame.setVisible(true);
@@ -175,8 +168,12 @@ public class Server {
     	clientHandler.sendToClient(authenticationResponse);
     	return newUser;
 	}
+
+    public void removeClient(String username) {
+    	mapUsernameToClient.remove(username);
+    }
     
-    public void sendToEVERYClients(Message message) throws IOException {
+    public void sendToEVERYClient(Message message) throws IOException {
     	for(ClientHandler client : currentClients) {
     		client.sendToClient(message);
     	}
@@ -468,6 +465,8 @@ public class Server {
 			case SubType.SEND_TEXT_MESSAGE: 
 				message = new Message(main, sub, Status.SUCCESS, msg.getTextMessage(), username, msg.getChatId());
 				break;
+			default:
+				break;
 		}
 		return message;
   }
@@ -523,6 +522,23 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private void exitServer(ServerSocket serverSocket) {
+		serverOnline = false;
+		System.out.println("Exiting server");
+		Message exitMessage = new Message(MainType.SERVER, SubType.EXIT, Status.SUCCESS);
+		try {
+			sendToEVERYClient(exitMessage);
+		} catch (IOException e) {
+		}
+		try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		save();
+		System.exit(0);
 	}
 
 	private synchronized void load() {

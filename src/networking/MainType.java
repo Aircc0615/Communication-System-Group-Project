@@ -5,5 +5,6 @@ public enum MainType {
     TEXT,
     CHAT_OPERATION,
     AUDIT_OPERATION,
+    SERVER,
     UNDEFINED
 }

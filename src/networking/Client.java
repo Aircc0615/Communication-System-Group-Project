@@ -92,7 +92,9 @@ public class Client {
 				System.out.println("Listening to server now");
         while(!clientSideSocket.isClosed()) {
         	Message msg = (Message) objectInputStream.readObject();
-        	if(msg.mainType == MainType.DISPLAY) {
+        	if(msg.mainType == MainType.SERVER && msg.subType == SubType.EXIT) {
+        		gui.forceExit();
+        	} else if(msg.mainType == MainType.DISPLAY) {
         		if(msg.subType == SubType.ACTUAL_CHAT) {
         			user.addChat(msg.getChat());
         			updateChatList(user);
@@ -211,8 +213,11 @@ public class Client {
         
         Message incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
         updateMessageHistory(incomingLoginResponse);
-       
-        if(incomingLoginResponse.status == Status.SUCCESS && incomingLoginResponse.subType == SubType.LOGIN_RESPONSE) {
+
+        if(incomingLoginResponse.mainType == MainType.SERVER && incomingLoginResponse.subType == SubType.EXIT) {
+        	gui.forceExit();
+        	return null;
+				} else if(incomingLoginResponse.status == Status.SUCCESS && incomingLoginResponse.subType == SubType.LOGIN_RESPONSE) {
             System.out.println(incomingLoginResponse.getText() + "\n");
             //System.out.println("Enter text to send!\n");
             User actualUser = incomingLoginResponse.getUser();
