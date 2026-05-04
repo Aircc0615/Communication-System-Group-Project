@@ -604,8 +604,10 @@ public class GUI {
 		 
 		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
 		        int chatId = chatIds[i];
-
-		        Chat chat = user.getCopyOfChat(chatId);
+		        Chat chat;
+		        try {
+		        	chat = user.getCopyOfChat(chatId);
+		        } catch(IndexOutOfBoundsException e) {continue;}
 
 		        ArrayList<String> otherUsers = new ArrayList<>();
 
