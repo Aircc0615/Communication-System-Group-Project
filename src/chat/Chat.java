@@ -286,4 +286,7 @@ public class Chat implements Serializable {
 		writer.write(this.toString());
 		writer.close();
 	}
+	public String getMemberUsername(int index) {
+	    return memberUsernames[index];
+	}
 }

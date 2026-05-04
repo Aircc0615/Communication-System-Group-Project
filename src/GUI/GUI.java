@@ -57,12 +57,13 @@ public class GUI {
 		 
 		 //set frame size
 		 loginFrame.setSize(450, 700);
-		 loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		 loginFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		 
 		 createLoginForm();
 		 
 		 //make frame visible
 		 loginFrame.setVisible(true);
+		 loginFrame.setResizable(false);
 		 
 	 }
 	 public void createLoginForm() throws UnknownHostException, IOException {
@@ -149,8 +150,9 @@ public class GUI {
 		 mainFrame = new JFrame();
 		 
 		 mainFrame.setSize(750, 700);
-		 mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		 mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		 //mainFrame.setLocationRelativeTo(null);
+		 mainFrame.setResizable(false);
 		 
 		 createLeftMainPanel();
 		 createRightMainPanel();
@@ -290,6 +292,9 @@ public class GUI {
 		 JPanel topRightPanel = new JPanel(new BorderLayout());
 		 topRightPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		 topRightPanel.setPreferredSize(new Dimension(500, 50));
+		 topRightPanel.setBackground(new Color(0xD3E3E3));
+		 topRightPanel.setForeground(Color.BLACK);
+		 topRightPanel.setOpaque(true);
 
 		 chatHeaderButton = new JButton("Select a chat");
 		 chatHeaderButton.setFocusPainted(false);
@@ -410,6 +415,10 @@ public class GUI {
 		 }else {
 			 JTextField inputField = new JTextField();
 			 JButton sendButton = new JButton("Send");
+			 sendButton.setBackground(new Color(0xD3E3E3));
+			 sendButton.setForeground(Color.BLACK);
+			 sendButton.setOpaque(true);
+			    
 			 sendButton.addActionListener(e -> {
 				 try {
 					handleSendMessage(inputField.getText());
@@ -448,6 +457,9 @@ public class GUI {
 			    textArea.setLineWrap(true);
 			    textArea.setWrapStyleWord(true);
 			    textArea.setEditable(false);
+			    textArea.setBackground(new Color(0xD3E3E3));
+			    textArea.setForeground(Color.BLACK);
+			    textArea.setOpaque(true);
 
 			    textArea.setColumns(15);  
 			    textArea.setSize(textArea.getPreferredSize());
@@ -597,13 +609,9 @@ public class GUI {
 
 		        ArrayList<String> otherUsers = new ArrayList<>();
 
-		        for (int j = 0; j < chat.getNumMessages(); j++) {
-		            TextMessage msg = chat.getMessage(j);
-		            String name = msg.getUsername();
+		        for (int j = 0; j < chat.getNumMembers(); j++) {
+		            String name = chat.getMemberUsername(j);
 
-		            System.out.println("Message username: " + name);
-		            System.out.println("Current user: " + user.getUsername());
-		            
 		            if (!name.equals(user.getUsername()) && !otherUsers.contains(name)) {
 		                otherUsers.add(name);
 		            }
@@ -621,7 +629,13 @@ public class GUI {
 		        }
 		        
 			    JButton chatButton = new JButton(chatName);
-			    chatButton.setMaximumSize(new Dimension(220, 40));
+			    chatButton.setMaximumSize(new Dimension(240, 40));
+			    chatButton.setBackground(new Color(0xD3E3E3));
+			    chatButton.setForeground(Color.BLACK);
+			    chatButton.setOpaque(true);
+			    chatButton.setContentAreaFilled(true);
+			    chatButton.setBorderPainted(true);
+			    chatButton.setFocusPainted(false);
 
 			    chatButton.addActionListener(e -> {
 			        setCurrentChat(chatId);
