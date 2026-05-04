@@ -725,7 +725,9 @@ public class GUI {
 	
 	 // SubType.EXPORT_CHAT_LOG
 	 private void audit_ExportChatLog() throws IOException {
-		client.audit_ExportChatLog();
+		 if(currentChatId == -1)
+			 return;
+		 user.exportChat(currentChatId, false);
 	 }
 	 
 }

@@ -25,7 +25,6 @@ public class Client {
 	private User selectedAuditUser;
 	private GUI gui;
 	private Thread serverListener;
-	private boolean auditingUser;
 	
 	
 		public void assignGUI(GUI gui) {
@@ -61,7 +60,7 @@ public class Client {
     // Client Side Server Operations
 	// Allows Client to connect to server and returns the socket 
 	public Socket connectToServer() throws UnknownHostException, IOException {
-				auditingUser = false;
+				System.out.println("Working Dir: " + System.getProperty("user.dir"));
         int port = 7777;
         String host = "localhost"; //need to update to actual host
 
@@ -335,12 +334,6 @@ public class Client {
 		sendToServer(viewChatsRequest);
 	}
 	
-	// SubType.EXPORT_CHAT_LOG
-	public void audit_ExportChatLog() throws IOException {
-		Message exportLogRequest = new Message(MainType.AUDIT_OPERATION, SubType.EXPORT_CHAT_LOG , Status.REQUEST, null, user);
-		updateMessageHistory(exportLogRequest); //store operation in history
-		sendToServer(exportLogRequest);
-	}
 	
 	private void updateChatList(User inputUser) {
      inputUser.addChatThreadSafety();

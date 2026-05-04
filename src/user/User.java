@@ -1,5 +1,6 @@
 package user;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import chat.Chat;
@@ -449,5 +450,13 @@ public class User implements Serializable {
 
 	public Chat getCopyOfChat(int chatId) {
 		return chatList.getCopyOfChat(chatId);
+	}
+
+	public void exportChat(int chatId, boolean fromServer) {
+		try {
+			chatList.exportChat(chatId, fromServer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
