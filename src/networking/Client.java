@@ -121,6 +121,7 @@ public class Client {
 	            }
 	        } 
 	        else if (msg.mainType == MainType.AUDIT_OPERATION) {
+	        	User tempUser;
 	        	switch (msg.getSubType()) {
 	        		case SubType.SELECT_USER:
 	        			if(msg.getStatus() != Status.SUCCESS)
