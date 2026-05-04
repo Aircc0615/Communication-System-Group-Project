@@ -75,6 +75,7 @@ public class GUI {
 		 
 		 JButton submitB = new JButton("Login");
 		 JButton createNewAccountBtn = new JButton("Create Account");
+		 JCheckBox itAccountCheckBox = new JCheckBox("Create as IT account");
 		 
 		 JLabel welcomeLabel = new JLabel("Welcome", SwingConstants.CENTER);
 		 welcomeLabel.setFont(new Font("Arial", Font.BOLD, 28));
@@ -96,8 +97,9 @@ public class GUI {
 		 createNewAccountBtn.addActionListener(e -> {
 			    String username = usernameField.getText();
 			    String password = new String(passwordField.getPassword());
-			    user = new User(username, password);
-			    //System.out.println(username + "\n"+ password);
+			    boolean isIT = itAccountCheckBox.isSelected();
+
+			    user = new User(username, password, isIT);
 			    try {
 					if(createNewAccount()) { //if the account was made successfully
 						JOptionPane.showMessageDialog(loginFrame, 
@@ -129,6 +131,7 @@ public class GUI {
 	     buttonPanel.setLayout(new GridLayout(2, 1, 0, 8));
 	     buttonPanel.add(submitB);
 	     buttonPanel.add(createNewAccountBtn);
+	     buttonPanel.add(itAccountCheckBox);
 	     
 	     
 	     //combine login
