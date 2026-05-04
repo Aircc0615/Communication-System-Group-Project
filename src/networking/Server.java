@@ -331,7 +331,7 @@ public class Server {
 			}
 
 			userBeingRemoved.removeChat(chatId, chatOwner);
-			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.SUCCESS, "", chatOwner, chatId);
+			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.SUCCESS, "",chatOwner, chatId);
 			sendToClient(msgToSend, userToRemove);
 
 		} catch(IndexOutOfBoundsException e) {
@@ -454,10 +454,8 @@ public class Server {
 			case SubType.REMOVE_USER_FROM_GC: 
 				message = new Message(main, sub, Status.SUCCESS, username, msg.getUsername(), msg.getChatId());
 				break;
-			case SubType.ADD_USER_TO_GC: 
-				message = new Message(main, sub, Status.SUCCESS, username, msg.getUsername(), msg.getChatId());
-				break;
 			case SubType.ACTUAL_CHAT: 
+				
 				message = new Message(main, sub, Status.SUCCESS, msg.getChat(), username);
 				break;
 			case SubType.SEND_TEXT_MESSAGE: 
