@@ -1,25 +1,29 @@
 package chat;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Scanner;
 
 public class Chat implements Serializable {
 	private TextMessage[] messages;
 	private int numMessages;
 	private String[] memberUsernames;
 	private int numMembers;
-	private final ChatType chatType;
-	private final String creatorUsername;
+	private ChatType chatType;
+	private String creatorUsername;
 	private static int count = 1;
-	private final int chatId;
+	private int chatId;
 	private Instant newestUpdate;
 	private transient Object mutexObject;
+	private boolean canLoad;
 
 	public Chat(String creatorUsername, String[] memberUsernames, ChatType type) {
 		// Might need to Change this for dynamic arrays
+		canLoad = false;
 		numMembers = memberUsernames.length;
 		boolean creatorInUsernames = false;
 		for(String name : memberUsernames) {
@@ -45,9 +49,42 @@ public class Chat implements Serializable {
 		mutexObject = new Object();
 	}
 
+	public Chat() {
+		canLoad = true;
+	}
+
+	public boolean loadFile(String pathToFile) {
+		File chatFile = new File(pathToFile);
+		try {
+			Scanner in = new Scanner(chatFile);
+			String line;
+			int index = 0;
+			while(in.hasNextLine()) {
+				line = in.nextLine();
+				switch (index) {
+					case 0:
+						
+						break;
+					case 1:
+						break;
+					case 2:
+						break;
+					case 3:
+						break;
+					default:
+						break;
+				}
+			}
+		} catch(Exception e) {
+			return false;
+		}
+		return false;
+	}
+
 	private Chat(TextMessage[] messages, int numMessages, String[] memberUsernames, 
 			int numMembers, ChatType chatType,
 			String creatorUsername, int chatId, Instant newestUpdate) {
+		canLoad = false;
 		this.messages = messages;
 		this.numMessages = numMessages;
 		this.memberUsernames = memberUsernames;

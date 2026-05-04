@@ -10,10 +10,12 @@ import networking.Message;
 
 public class UserLoginModule {
 	private HashMap<String, User> usernameToUser;
+	private List<User> users;
 	static Scanner sin = new Scanner(System.in);
 	
-	public UserLoginModule(HashMap<String, User> usernameToUser) {
+	public UserLoginModule(HashMap<String, User> usernameToUser, List<User> users) {
 		this.usernameToUser = usernameToUser;
+		this.users = users;
 	}
 	
 	public User authenticateUser(User userLoggingIn) {
@@ -33,9 +35,10 @@ public class UserLoginModule {
 		if(usernameToUser.containsKey(username)){
 			return null;
 		}
-		
-		usernameToUser.put(username, user);
-		return user;
+		User newUser = new User(user.getUsername(), user.getPassword());
+		users.add(newUser);
+		usernameToUser.put(username, newUser);
+		return newUser;
 	}
 
 

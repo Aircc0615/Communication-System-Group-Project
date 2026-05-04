@@ -16,20 +16,29 @@ import user.User;
 import user.UserLoginModule;
 
 public class Server {
-	private List<User> users = new ArrayList<>();
-	private ChatList chats = new ChatList();
-	private List<User> onlineUsers = new ArrayList<>();
-	private int numOnlineUsers;
-	private static List<ClientHandler> currentClients = new ArrayList<>();
-	private HashMap<String, ClientHandler> mapUsernameToClient = new HashMap(); //string is username
-	private HashMap<String, Set<ClientHandler>> mapUsernameToITClient = new HashMap();
-	private HashMap<ClientHandler, String> mapITClientToUsername = new HashMap();
-	private HashMap<String, User> usernameToUser = new HashMap();
-	private UserLoginModule userLoginModule = new UserLoginModule(usernameToUser); 
-	private Thread saver;
-	private boolean stillSaving;
+	private static List<User> users;
+	private static ChatList chats;
+	private static List<User> onlineUsers;
+	private static int numOnlineUsers;
+	private static List<ClientHandler> currentClients;
+	private static HashMap<String, ClientHandler> mapUsernameToClient; //string is username
+	private static HashMap<String, Set<ClientHandler>> mapUsernameToITClient;
+	private static HashMap<ClientHandler, String> mapITClientToUsername;
+	private static HashMap<String, User> usernameToUser;
+	private static UserLoginModule userLoginModule; 
+	private static Thread saver;
+	private static boolean stillSaving;
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+    	users = new ArrayList<>();
+    	chats = new ChatList();
+    	onlineUsers = new ArrayList<>();
+    	currentClients = new ArrayList<>();
+    	mapUsernameToClient = new HashMap();
+    	mapUsernameToITClient = new HashMap();
+    	mapITClientToUsername = new HashMap();
+    	usernameToUser = new HashMap();
+    	userLoginModule = new UserLoginModule(usernameToUser, users); 
     	Server server = new Server();
     	server.createTestUsers();
     	server.createSavingThread();
@@ -450,6 +459,10 @@ public class Server {
 		for(User user : users) {
 			user.exportUserChatList();
 		}
+	}
+
+	private synchronized void load() {
+		
 	}
 }
 

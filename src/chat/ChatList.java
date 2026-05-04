@@ -23,6 +23,7 @@ public class ChatList implements Serializable{
 
 	// inserts a chat in the array based on the order of the timestamp
 	public void addChat(Chat chat) {
+		addThreadSafety();
 		synchronized (writeMutex) {
 			chat.addThreadSafety();
 			int chatId = chat.getChatId();
@@ -96,6 +97,7 @@ public class ChatList implements Serializable{
 
 	// add message
 	public void addChatMessage(int chatId, TextMessage message) {
+		addThreadSafety();
 		synchronized (writeMutex) {
 			Chat[] tempChats = getCopyOfChats();
 			int chatIndex = parseId(tempChats, chatId);
@@ -139,6 +141,7 @@ public class ChatList implements Serializable{
 
 	// Attempts the delete the chat with id "chatId"
 	public void deleteChat(int chatId, String fromUsername) {
+		addThreadSafety();
 		synchronized (writeMutex) {
 			Chat[] tempChats = getCopyOfChats();
 			int indexInArray = parseId(tempChats, chatId);
@@ -161,6 +164,7 @@ public class ChatList implements Serializable{
 	}
 
 	public void deleteChat(int chatId, boolean isBuffer) {
+		addThreadSafety();
 		synchronized (writeMutex) {
 			if(!isBuffer)
 				return;
