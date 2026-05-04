@@ -39,7 +39,6 @@ public class GUI {
 	private JButton chatHeaderButton;
 	JMenuItem addUserItem;
 	JMenuItem removeUserItem;
-	JMenuItem deleteChatItem;
 	
 	
 	public GUI(Client client) throws UnknownHostException, IOException{
@@ -334,15 +333,15 @@ public class GUI {
 
 		 addUserItem = new JMenuItem("Add people to chat");
 		 removeUserItem = new JMenuItem("Remove user from chat");
-		 deleteChatItem = new JMenuItem("Delete chat");
 
 		 chatMenu.add(addUserItem);
 		 chatMenu.add(removeUserItem);
-		 chatMenu.addSeparator();
-		 chatMenu.add(deleteChatItem);
 
 		 chatHeaderButton.addActionListener(e -> {
-		     chatMenu.show(chatHeaderButton, 0, chatHeaderButton.getHeight());
+			 Chat chat = user.getCopyOfChat(currentChatId);
+			 if(chat.getNumMembers() > 2) {
+				 chatMenu.show(chatHeaderButton, 0, chatHeaderButton.getHeight());
+			 }
 		 });
 
 		 addUserItem.addActionListener(e -> {
@@ -375,41 +374,6 @@ public class GUI {
 		         }
 		     }
 		 });
-
-		 deleteChatItem.addActionListener(e -> {
-			    if (currentChatId == -1) {
-			        JOptionPane.showMessageDialog(mainFrame, "No chat selected.");
-			        return;
-			    }
-
-			    int confirm = JOptionPane.showConfirmDialog(
-			        mainFrame,
-			        "Delete chat " + currentChatId + "?",
-			        "Confirm Delete",
-			        JOptionPane.YES_NO_OPTION
-			    );
-
-			    if (confirm == JOptionPane.YES_OPTION) {
-			        try {
-			            deleteGroupChat(String.valueOf(currentChatId));
-
-			            currentChatId = -1;
-			            chatHeaderButton.setText("Select a chat");
-
-			            panel1.removeAll();
-			            panel1.revalidate();
-			            panel1.repaint();
-
-			            reloadChatList(user);
-			            
-			            JOptionPane.showMessageDialog(mainFrame, "Chat deleted.");
-
-			        } catch (IOException ex) {
-			            JOptionPane.showMessageDialog(mainFrame, "Failed to delete chat.");
-			            ex.printStackTrace();
-			        }
-			    }
-			});
 
 		 topRightPanel.add(chatHeaderButton, BorderLayout.CENTER);
 		 
@@ -606,7 +570,8 @@ public class GUI {
 
 		    addUserItem.setVisible(isCreator);
 		    removeUserItem.setVisible(isCreator);
-		    deleteChatItem.setVisible(isCreator);
+		   
+		    
 		}
 	 
 	 private boolean isCurrentUserCreator(int chatId) {

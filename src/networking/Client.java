@@ -61,7 +61,7 @@ public class Client {
 	// Allows Client to connect to server and returns the socket 
 	public Socket connectToServer() throws UnknownHostException, IOException {
         int port = 7777;
-        String host = "134.154.49.161"; //need to update to actual host
+        String host = "localhost"; //need to update to actual host
 
         clientSideSocket = new Socket(host, port); //create a client side socket that connects to server with the host and port specified
         System.out.println("Connected to: " + clientSideSocket.getInetAddress().getHostAddress());
