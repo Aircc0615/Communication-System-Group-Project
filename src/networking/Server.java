@@ -238,7 +238,6 @@ public class Server {
 			return;
 		}
 		String[] usernames = chats.getChatMembers(chatId);
-		for(int i = 0; i < usernames.length; i++)
 		
 		for(String name : usernames) {
 			User otherUser = usernameToUser.get(name);
@@ -281,7 +280,7 @@ public class Server {
 		
 			for(String username : chatUsers) {
 				User user = usernameToUser.get(username);
-				user.addChat(newChat);
+				chats.insertChatToOneList(user.getChatList(), chatId);
 			}
 			newChat = chats.getCopyOfChat(chatId);
 			messageToSend = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, newChat);
@@ -297,13 +296,12 @@ public class Server {
 	// SubType.ADD_USER_TO_GC
 	public void handleAddUserToChat(Message message, ClientHandler clientHandler) throws IOException {
 		int chatId = message.getChatId();
-		String chatOwner = message.getUser().getUsername();
-		String userToAdd= message.getText(); //we need to make sure we store the username of who is being added in the text field
+		String chatOwner = message.getUsername();
+		String userToAdd = message.getText(); //we need to make sure we store the username of who is being added in the text field
 		Message messageToSend;
 		
 		try {
 			chats.addChatMember(chatId, userToAdd, chatOwner);
-			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.SUCCESS, "", chatOwner, chatId);
 			
 			Chat updatedChat = chats.getCopyOfChat(chatId);
 			Message updatedChatForUserUI = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, updatedChat);
@@ -311,15 +309,14 @@ public class Server {
 			
 		} catch(Exception e) {
 			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.FAILED);
+			sendToClient(messageToSend, chatOwner);
 		}
-		sendToClient(messageToSend, userToAdd);
-		sendToClient(messageToSend, chatOwner);
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
 	public void handleRemoveUserFromChat(Message message, ClientHandler clientHandler) throws IOException {
 		int chatId = message.getChatId();
-		String chatOwner = message.getUser().getUsername();
+		String chatOwner = message.getUsername();
 		String userToRemove = message.getText(); //we need to make sure we store the username of who is being removed in the text field
 		Message msgToSend;
 		
@@ -336,7 +333,6 @@ public class Server {
 			userBeingRemoved.removeChat(chatId, chatOwner);
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.SUCCESS, "", chatOwner, chatId);
 			sendToClient(msgToSend, userToRemove);
-			sendToClient(msgToSend, chatOwner);
 
 		} catch(IndexOutOfBoundsException e) {
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.FAILED);
@@ -369,6 +365,8 @@ public class Server {
     
 	// SubType.SELECT_USER
     public void handleAuditSelectUser(Message message, ClientHandler clientHandler) throws IOException {
+    	for(User user : users)
+    		System.out.println("User: " + user.getUsername());
 		String username = message.getText();
 		String fromUsername = message.getUsername();
 		if(!usernameToUser.containsKey(username) || !(message.getStatus() == Status.REQUEST))

@@ -422,7 +422,9 @@ public class User implements Serializable {
         return chatList.getChatIds().length;
     }
 
-
+    public void chatListSelfCopyChats() {
+    	chatList.selfCopyChats();
+    }
 
     public int getUnreadChatCount() {
         return unreadChatList.getChatIds().length;

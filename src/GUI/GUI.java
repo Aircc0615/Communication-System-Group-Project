@@ -473,6 +473,7 @@ public class GUI {
 	 public void displayChat(int chatId) {
 		 panel1.removeAll();
 		 currentChatId = chatId;
+		 try {
 		 Chat chat = user.getCopyOfChat(chatId);
 		 for(int i = 0; i < chat.getNumMessages(); i++) {
 			 
@@ -506,6 +507,9 @@ public class GUI {
 
 			    panel1.add(msgPanel);
 			}
+		 }catch (Exception e) {
+			 return;
+		 }
 		 panel1.revalidate();
 		 panel1.repaint();
 		 scrollToBottom();
@@ -631,7 +635,7 @@ public class GUI {
 		 int[] chatIds = user.getChatIds();
 		 int groupNumber = 1;
 		 
-		 for (int i = 0; i < user.getChatList().getNumChats(); i++) {
+		 for (int i = 0; i < chatIds.length; i++) {
 		        int chatId = chatIds[i];
 		        Chat chat;
 		        try {

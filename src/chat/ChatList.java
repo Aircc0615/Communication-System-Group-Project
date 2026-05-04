@@ -23,6 +23,9 @@ public class ChatList implements Serializable{
 
 	// inserts a chat in the array based on the order of the timestamp
 	public void addChat(Chat chat) {
+		if(chats.length == 0) {
+			chats = new Chat[8];
+		}
 		synchronized (writeMutex) {
 			chat.addThreadSafety();
 			int chatId = chat.getChatId();
@@ -362,6 +365,15 @@ public class ChatList implements Serializable{
 		int[] tempIds = getChatIds();
 		for(int id : tempIds) {
 			exportChat(id, fromServer);
+		}
+	}
+	public void selfCopyChats() {
+		synchronized (writeMutex) {
+			Chat[] tempChats = chats;
+			chats = new Chat[numChats];
+			for(int i = 0; i < numChats; i++) {
+				chats[i] = tempChats[i].getCopy();
+			}
 		}
 	}
 }

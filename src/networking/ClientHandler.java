@@ -194,6 +194,7 @@ public class ClientHandler implements Runnable{
 
 	public void sendToClient(Message message) throws IOException {
 		objectOutputStream.writeObject(message);
+		System.out.println("Sent to: " + username);
 	}
 
 	private void handleSendText(Message message) {

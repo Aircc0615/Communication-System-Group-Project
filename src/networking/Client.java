@@ -130,6 +130,7 @@ public class Client {
 	        		        break;
 	        		    }
 	        		    tempUser.addChatThreadSafety();
+	        		    tempUser.chatListSelfCopyChats();
 	        				selectedAuditUser = tempUser;
 
 	        		    SwingUtilities.invokeLater(() -> {
@@ -158,7 +159,7 @@ public class Client {
 	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
 	        				break;
 	        			}
-	        			tempUser.addChat(msg.getChat());
+	        			tempUser.addChat(msg.getChat().getCopy());
 	        			updateChatList(tempUser);
 	        			break;
 	        		case SubType.SEND_TEXT_MESSAGE: 
@@ -183,11 +184,11 @@ public class Client {
         		}
         	}
 	        else { 
-	            	if(msg.getUser() != null)
+	            	/*if(msg.getUser() != null)
 	            		System.out.println("\n" + msg.getUser().getUsername() + ": " + msg.getText() + '\n'); //display message along with who its from
 	            	else {
 	            		System.out.println("\nServer: " + msg.getText() + '\n');
-	            	}
+	            	}*/
 	            }
         }
 	}
@@ -296,14 +297,14 @@ public class Client {
 	
 	// SubType.ADD_USER_TO_GC
 	public void addUserToChat(String userToAdd, int chatID) throws IOException {
-		Message addUserToGC = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC , Status.REQUEST, userToAdd, user, chatID);
+		Message addUserToGC = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC , Status.REQUEST, userToAdd, user.getUsername(), chatID);
 		updateMessageHistory(addUserToGC); //store operation in history
 		sendToServer(addUserToGC);
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
 	public void removeUserFromChat(String userToRemove, int chatID) throws IOException {
-		Message removeUserFromGC = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC , Status.REQUEST, userToRemove, user, chatID);
+		Message removeUserFromGC = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC , Status.REQUEST, userToRemove, user.getUsername(), chatID);
 		updateMessageHistory(removeUserFromGC); //store operation in history
 		sendToServer(removeUserFromGC);
 	}
@@ -311,7 +312,7 @@ public class Client {
 	// SubType.DELETE_GC
 	public void DeleteChat(String chatID) throws IOException {
 		//need a chatID to perform, most likely the chat were hovering over/clicking on
-		Message chatToDelete = new Message(MainType.CHAT_OPERATION, SubType.DELETE_GC , Status.REQUEST, chatID, user);
+		Message chatToDelete = new Message(MainType.CHAT_OPERATION, SubType.DELETE_GC , Status.REQUEST, chatID, user.getUsername());
 		updateMessageHistory(chatToDelete); //store operation in history
 		sendToServer(chatToDelete);
 	}	
