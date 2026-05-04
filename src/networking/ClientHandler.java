@@ -8,12 +8,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
 import user.User;
 
 public class ClientHandler implements Runnable{
     private final Socket clientSocket;
     private Server server;
+    private String username;
     protected static List<Message> messageList = new ArrayList<>();
     
     ObjectInputStream objectInputStream;
@@ -74,11 +74,20 @@ public class ClientHandler implements Runnable{
     public User performLoginOperation(Message message) throws IOException {
         //if the login is successful we perform the next step, otherwise we send a failed response
         if(message.subType == SubType.LOGIN) {
-        	return server.authenticateUser(message.getUser(), this);
+        	User authenticatedUser = server.authenticateUser(message.getUser(), this);
+            
+            if(authenticatedUser != null){
+                username = authenticatedUser.getUsername();
+            }
+            return authenticatedUser;
         }
       return null;
     }
-  
+    
+    public String getUsername(){
+        return username;
+    }
+
     public User performCreateNewUserOperation(Message message) throws IOException {
     	User user = message.getUser();
     	return server.handleCreateNewUser(user , this);
