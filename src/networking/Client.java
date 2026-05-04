@@ -78,10 +78,10 @@ public class Client {
     serverListener = new Thread(new Runnable() {
        public void run() {
         	try {
-						listenForServerMessages();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+				listenForServerMessages();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
        }
     });
     serverListener.start();
