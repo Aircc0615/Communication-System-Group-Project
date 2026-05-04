@@ -1,5 +1,6 @@
 package chat;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -296,5 +297,13 @@ public class ChatList implements Serializable{
 				System.out.println("Adding thread safety to chat: " + chat.getChatId());
 			}
 		}
+	}
+
+	public void exportChat(int chatId, boolean fromServer) throws IOException {
+		Chat[] tempChats = chats;
+		int chatIndex = parseId(tempChats, chatId);
+		if(chatIndex == -1)
+			throw new IndexOutOfBoundsException();
+		tempChats[chatIndex].exportChat(fromServer);
 	}
 }

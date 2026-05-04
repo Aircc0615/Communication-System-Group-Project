@@ -1,5 +1,8 @@
 package chat;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -197,7 +200,7 @@ public class Chat implements Serializable {
 	public String toString() {
 		synchronized (mutexObject) {
 			String retStr = "";
-			// member_ids
+			// member_usernames
 			for (int i = 0; i < numMembers; i++) {
 				if (i != 0)
 					retStr += ',';
@@ -208,7 +211,7 @@ public class Chat implements Serializable {
 			if (chatType == ChatType.PRIVATE) {
 				retStr += "PRIVATE";
 			}
-			if (chatType == ChatType.GROUP) {
+			else if (chatType == ChatType.GROUP) {
 				retStr += "GROUP";
 			}
 			retStr += '\n';
@@ -219,10 +222,14 @@ public class Chat implements Serializable {
 			retStr += creatorUsername;
 
 			// chat messages
+			TextMessage message;
 			for (int i = 0; i < numMessages; i++) {
-				TextMessage message = messages[i];
-				retStr += ('\n' + message.getUserId() + ',' + message.getUsername() + ',' + message.getText() + ','
-				    + message.getTimestamp());
+				message = messages[i];
+				retStr += '\n';
+				retStr += (message.getUserId() + ",");
+				retStr += (message.getUsername() + ',');
+				retStr += (message.getText() + ',');
+				retStr += message.getTimestamp();
 			}
 			return retStr;
 		}
@@ -258,5 +265,28 @@ public class Chat implements Serializable {
 	public void addThreadSafety() {
 		if(mutexObject == null)
 			mutexObject = new Object();
+	}
+
+	public void exportChat(boolean fromServer) throws IOException {
+		String folderName;
+		if(fromServer)
+			folderName = "Server";
+		else
+			folderName = "IT_Export";
+		String localPath = "";
+		if(System.getProperty("user.dir").matches("bin$"))
+			localPath = "../";
+		File exportDir = new File(localPath + "LocalFiles");
+		exportDir.mkdir();
+		File folderNameDir = new File(localPath + "LocalFiles/" + folderName);
+		folderNameDir.mkdir();
+		File chatDir = new File(localPath + "LocalFiles/" + folderName + "/Chats");
+		chatDir.mkdir();
+		File chatFile = new File(localPath + "LocalFiles/" + folderName + "/Chats/Chat_" + chatId + ".txt");
+		chatFile.delete();
+		chatFile.createNewFile();
+		FileWriter writer = new FileWriter(chatFile);
+		writer.write(this.toString());
+		writer.close();
 	}
 }
