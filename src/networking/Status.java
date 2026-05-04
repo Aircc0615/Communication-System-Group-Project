@@ -1,4 +1,4 @@
 package networking;
 public enum Status {
-    REQUEST, SUCCESS, FAILED, UNDEFINED, ;
+    REQUEST, SUCCESS, FAILED, INVALID, UNDEFINED
 }

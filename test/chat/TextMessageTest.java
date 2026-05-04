@@ -20,7 +20,7 @@ class TextMessageTest {
 		username = "test";
 		userId = 1;
 		time = Instant.now();
-		textMessage = new TextMessage(text, username, userId, time);
+		textMessage = new TextMessage(userId, username, text, time);
 	}
 
 	@Test

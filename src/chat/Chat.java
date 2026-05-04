@@ -1,22 +1,29 @@
 package chat;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Scanner;
 
 public class Chat implements Serializable {
 	private TextMessage[] messages;
 	private int numMessages;
 	private String[] memberUsernames;
 	private int numMembers;
-	private final ChatType chatType;
-	private final String creatorUsername;
+	private ChatType chatType;
+	private String creatorUsername;
 	private static int count = 1;
-	private final int chatId;
+	private int chatId;
 	private Instant newestUpdate;
 	private transient Object mutexObject;
+	private boolean canLoad;
 
 	public Chat(String creatorUsername, String[] memberUsernames, ChatType type) {
 		// Might need to Change this for dynamic arrays
+		canLoad = false;
 		numMembers = memberUsernames.length;
 		boolean creatorInUsernames = false;
 		for(String name : memberUsernames) {
@@ -42,9 +49,61 @@ public class Chat implements Serializable {
 		mutexObject = new Object();
 	}
 
+	public Chat() {
+		canLoad = true;
+		messages = new TextMessage[50];
+		numMessages = 0;
+		mutexObject = new Object();
+	}
+
+	public boolean loadFile(String pathToFile, int chatId) {
+		File chatFile = new File(pathToFile);
+		try {
+			Scanner in = new Scanner(chatFile);
+			String line;
+			int index = 0;
+			while(in.hasNextLine()) {
+				line = in.nextLine();
+				switch (index) {
+					case 0:
+						memberUsernames = line.split(",");
+						numMembers = memberUsernames.length;
+						break;
+					case 1:
+						if(line.compareTo("PRIVATE") == 0)
+							chatType = ChatType.PRIVATE;
+						else if(line.compareTo("GROUP") == 0)
+							chatType = ChatType.GROUP;
+						break;
+					case 2:
+						newestUpdate = Instant.parse(line);
+						break;
+					case 3:
+						creatorUsername = line;
+						break;
+					default:
+						String[] textMessageInfo = line.split(",");
+						TextMessage messageToAdd = new TextMessage(Integer.parseInt(textMessageInfo[0]),
+								textMessageInfo[1],textMessageInfo[2],Instant.parse(textMessageInfo[3]));
+						addMessage(messageToAdd);
+						break;
+				}
+				index++;
+			}
+			this.chatId = chatId;
+			if(count < chatId)
+				count = chatId;
+			in.close();
+			return true;
+		} catch(Exception e) {
+			return false;
+		}
+	}
+
 	private Chat(TextMessage[] messages, int numMessages, String[] memberUsernames, 
 			int numMembers, ChatType chatType,
 			String creatorUsername, int chatId, Instant newestUpdate) {
+		canLoad = false;
 		this.messages = messages;
 		this.numMessages = numMessages;
 		this.memberUsernames = memberUsernames;
@@ -61,13 +120,11 @@ public class Chat implements Serializable {
 
 	// inserts a message at the end of the message array
 	public void addMessage(TextMessage message) {
-
 		if(message == null){
-			return;
+			throw new IllegalArgumentException();
 		}
-
 		if (message.getText() == null || message.getText().trim().length() == 0){
-			return;
+			throw new IllegalArgumentException();
 		}
 		synchronized (mutexObject) {
 			if (messages.length == 0) {
@@ -199,7 +256,7 @@ public class Chat implements Serializable {
 	public String toString() {
 		synchronized (mutexObject) {
 			String retStr = "";
-			// member_ids
+			// member_usernames
 			for (int i = 0; i < numMembers; i++) {
 				if (i != 0)
 					retStr += ',';
@@ -210,7 +267,7 @@ public class Chat implements Serializable {
 			if (chatType == ChatType.PRIVATE) {
 				retStr += "PRIVATE";
 			}
-			if (chatType == ChatType.GROUP) {
+			else if (chatType == ChatType.GROUP) {
 				retStr += "GROUP";
 			}
 			retStr += '\n';
@@ -221,10 +278,14 @@ public class Chat implements Serializable {
 			retStr += creatorUsername;
 
 			// chat messages
+			TextMessage message;
 			for (int i = 0; i < numMessages; i++) {
-				TextMessage message = messages[i];
-				retStr += ('\n' + message.getUserId() + ',' + message.getUsername() + ',' + message.getText() + ','
-				    + message.getTimestamp());
+				message = messages[i];
+				retStr += '\n';
+				retStr += (message.getUserId() + ",");
+				retStr += (message.getUsername() + ',');
+				retStr += (message.getText() + ',');
+				retStr += message.getTimestamp();
 			}
 			return retStr;
 		}
@@ -260,5 +321,28 @@ public class Chat implements Serializable {
 	public void addThreadSafety() {
 		if(mutexObject == null)
 			mutexObject = new Object();
+	}
+
+	public void exportChat(boolean fromServer) throws IOException {
+		String folderName;
+		if(fromServer)
+			folderName = "Server";
+		else
+			folderName = "IT_Export";
+		String localPath = "";
+		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
+			localPath = "../";
+		}
+		File chatDir = new File(localPath + "LocalFiles/" + folderName + "/Chats");
+		chatDir.mkdirs();
+		File chatFile = new File(localPath + "LocalFiles/" + folderName + "/Chats/Chat_" + chatId + ".txt");
+		chatFile.delete();
+		chatFile.createNewFile();
+		FileWriter writer = new FileWriter(chatFile);
+		writer.write(this.toString());
+		writer.close();
+	}
+	public String getMemberUsername(int index) {
+	    return memberUsernames[index];
 	}
 }

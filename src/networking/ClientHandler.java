@@ -42,22 +42,28 @@ public class ClientHandler implements Runnable{
             	
             	if (message.mainType == MainType.AUTHENTICATION) { //if its a login
             			if(message.subType == SubType.CREATE_USER) {
-            				User newUser = performCreateNewUserOperation(message);
-            				break;
+            				performCreateNewUserOperation(message);
+            				System.out.println("Updating users. Here are all the users on the server: ");
+            				server.printAllUsers();
             			}
-                User authenticatedUser = performLoginOperation(message); //returns true if its a valid user/false if not
-
-                if (authenticatedUser != null) {
-                	break; //if they're a valid user they can go ahead and send messages
-                }
-                System.err.println("Invalid User");
+            			else if(message.subType == SubType.LOGIN) {
+            				User authenticatedUser = performLoginOperation(message); //returns true if its a valid user/false if not
+			                if (authenticatedUser != null) {
+			                	break; //if they're a valid user they can go ahead and send messages
+			                }
+			                System.err.println("Invalid User");
+            			}
             	}
             }
-            while (message.subType != SubType.LOGOUT) {
+            while (true) {
                message = (Message) objectInputStream.readObject(); //read the incoming object
                messageList.add(message); //add the incoming messages to the array
 
                performMessageOperation(clientSocket, clientInputStream, message); //this would perform the appropriate operation depending on the message Main and Sub types
+               if(message.subType == SubType.LOGOUT) {
+              	 if(server.logoutUser(message.getUsername()))
+              		 break;
+               }
             }
             Message logoutSuccess = new Message(MainType.AUTHENTICATION, SubType.LOGOUT, Status.SUCCESS, "Logout successful");
             messageList.add(logoutSuccess);
@@ -161,6 +167,8 @@ public class ClientHandler implements Runnable{
                 case SubType.EXPORT_CHAT_LOG:
                 	server.handleAuditExportChat(message, this);
                     break;
+                case SubType.EXIT_AUDIT_MODE:
+                	server.handleExitAudit(this);
                 default:
                     System.out.println("Message Object Constructed Incorrectly");
             }

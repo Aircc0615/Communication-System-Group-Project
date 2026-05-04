@@ -8,6 +8,9 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,23 +19,53 @@ import user.User;
 import user.UserLoginModule;
 
 public class Server {
-	private List<User> users = new ArrayList<>();
-	private int numUsers;
-	private ChatList chats = new ChatList();
-	private List<User> onlineUsers = new ArrayList<>();
-	private int numOnlineUsers;
-	private static List<ClientHandler> currentClients = new ArrayList<>();
-	private int numCurrentClients;
-	private HashMap<String, ClientHandler> mapUsernameToClient = new HashMap(); //string is username
-	private HashMap<String, User> usernameToUser = new HashMap();
-	private UserLoginModule userLoginModule = new UserLoginModule(usernameToUser); 
+	private static List<User> users;
+	private static ChatList chats;
+	private static List<User> onlineUsers;
+	private static int numOnlineUsers;
+	private static List<ClientHandler> currentClients;
+	private static HashMap<String, ClientHandler> mapUsernameToClient; //string is username
+	private static HashMap<String, Set<ClientHandler>> mapUsernameToITClient;
+	private static HashMap<ClientHandler, String> mapITClientToUsername;
+	private static HashMap<String, User> usernameToUser;
+	private static UserLoginModule userLoginModule; 
+	private static Thread saver;
+	private static boolean stillSaving;
 	
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+    	users = new ArrayList<>();
+    	chats = new ChatList();
+    	onlineUsers = new ArrayList<>();
+    	currentClients = new ArrayList<>();
+    	mapUsernameToClient = new HashMap();
+    	mapUsernameToITClient = new HashMap();
+    	mapITClientToUsername = new HashMap();
+    	usernameToUser = new HashMap();
+    	userLoginModule = new UserLoginModule(usernameToUser, users); 
     	Server server = new Server();
-    	server.createTestUsers();
+    	server.load();
+    	//server.createTestUsers();
+    	server.createSavingThread();
     	server.startServer();
     }
     
+    public void createSavingThread() {
+    	stillSaving = true;
+    	saver = new Thread(new Runnable() {
+    		public void run() {
+    			while(stillSaving) {
+    				save();
+    				try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+    			}
+    		}
+    	});
+    	saver.start();
+    }
+
     //used to test GUI
     public void createTestUsers() {
     	User user1 = new User("1", "1", true);
@@ -68,6 +101,7 @@ public class Server {
                 Socket socket = serverSocket.accept(); //blocks until a client connects
                 ClientHandler client = new ClientHandler(socket, this);
                 currentClients.add(client);
+                System.out.println("Number of users connected: " + currentClients.size());
                 (new Thread(client)).start();
             }
         } catch (Exception e) {
@@ -107,11 +141,18 @@ public class Server {
 
     public User authenticateUser(User userToAuthenticate, ClientHandler handler) throws IOException {
     	System.out.println("Authenticating User");
+    	boolean userAlreadyOnline = false;
+    	if(mapUsernameToClient.containsKey(userToAuthenticate.getUsername()))
+    		userAlreadyOnline = true;
     	User user = userLoginModule.authenticateUser(userToAuthenticate);
     	Message authenticationResponse;
-    	if(user != null) {
+    	if (userAlreadyOnline) {
+    		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.INVALID);
+    		handler.sendToClient(authenticationResponse);
+    		return null;
+    	} else if(user != null) {
     		mapUsernameToClient.put(user.getUsername(), handler);
-    		System.out.println("Successful");
+    		System.out.println( "\n" + user.getUsername() + " successfully logged in.");
     		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.LOGIN_RESPONSE, Status.SUCCESS, user.getUsername(), user);
     		sendToClient(authenticationResponse, user.getUsername());
     	} else {
@@ -126,10 +167,10 @@ public class Server {
     	User newUser = userLoginModule.createUser(user);
     	if(newUser != null) {
     		users.add(newUser);
-	        authenticationResponse = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.SUCCESS, "User created successfully", newUser); //create a login success message to send to the user
+	        authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.SUCCESS, "User created successfully", newUser); //create a login success message to send to the user
     	}
     	else {
-    		authenticationResponse = new Message(MainType.CHAT_OPERATION, SubType.CREATE_USER , Status.FAILED, "Failed to create new user", newUser);
+    		authenticationResponse = new Message(MainType.AUTHENTICATION, SubType.CREATE_USER , Status.FAILED, "Failed to create new user", newUser);
     	}
     	clientHandler.sendToClient(authenticationResponse);
     	return newUser;
@@ -142,6 +183,7 @@ public class Server {
     }
 
     public void sendToClients(Message message, String[] usernames) throws IOException {
+    	Message itMessage = null;
     	for(String username : usernames) {
     		if(mapUsernameToClient.containsKey(username)) {
     			ClientHandler client = mapUsernameToClient.get(username);
@@ -149,12 +191,34 @@ public class Server {
     		} else {
     			//add unread buffer logic here
     		}
+    		if(mapUsernameToITClient.containsKey(username)) {
+    			itMessage = handleITMessageConstruction(message, username);
+    			if(itMessage == null)
+    				continue;
+    			Set<ClientHandler> clients = mapUsernameToITClient.get(username);
+    			for(ClientHandler client : clients) {
+    				client.sendToClient(itMessage);
+    			}
+    		}
     	}
     }
 
     public void sendToClient(Message message, String username) throws IOException {
-    	ClientHandler client = mapUsernameToClient.get(username);
-    	client.sendToClient(message);
+    	Message itMessage = handleITMessageConstruction(message, username);
+    	if(mapUsernameToClient.containsKey(username)) {
+    		ClientHandler client = mapUsernameToClient.get(username);
+    		client.sendToClient(message);
+    	} else {
+    		//add unread buffer logic here
+    	}
+    	if(mapUsernameToITClient.containsKey(username)) {
+    		if(itMessage == null)
+    			return;
+    		Set<ClientHandler> clients = mapUsernameToITClient.get(username);
+    		for(ClientHandler client : clients) {
+    			client.sendToClient(itMessage);
+    		}
+    	}
     }
     
 	// MESSAGE: MainType.TEXT    
@@ -181,8 +245,11 @@ public class Server {
 		
 		for(String name : usernames) {
 			User otherUser = usernameToUser.get(name);
-			otherUser.updateChatOrder(chatId);
-    		}
+			if(otherUser != null) {
+				otherUser.updateChatOrder(chatId);
+			}
+			else continue;
+    	}
     	
         Message msgToSend = new Message(MainType.TEXT, SubType.SEND_TEXT_MESSAGE ,Status.SUCCESS, txtMsg, chatId);
         sendToClients(msgToSend, usernames);
@@ -198,7 +265,7 @@ public class Server {
 		
 		for(int i = 0; i < memberUsernames.length; i++) {
 			String userToValidate = memberUsernames[i].trim();
-			if(usernameToUser.containsKey(userToValidate)) {
+			if(userToValidate.length() >= 1 && usernameToUser.containsKey(userToValidate)) { //need to update to check for length of 6 chars later
 				validUsers.add(userToValidate);
 			}
 		}
@@ -240,10 +307,16 @@ public class Server {
 		try {
 			chats.addChatMember(chatId, userToAdd, chatOwner);
 			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.SUCCESS, "", chatOwner, chatId);
+			
+			Chat updatedChat = chats.getCopyOfChat(chatId);
+			Message updatedChatForUserUI = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, updatedChat);
+			sendToClient(updatedChatForUserUI, userToAdd);
+			
 		} catch(Exception e) {
 			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.FAILED);
 		}
 		sendToClient(messageToSend, userToAdd);
+		sendToClient(messageToSend, chatOwner);
 	}
 	
 	// SubType.REMOVE_USER_FROM_GC
@@ -255,12 +328,24 @@ public class Server {
 		
 		try {
 			chats.removeChatMember(chatId, userToRemove, chatOwner);
-			usernameToUser.get(userToRemove).removeChat(chatId, chatOwner);;
+			
+			User userBeingRemoved = usernameToUser.get(userToRemove);
+			if (userBeingRemoved == null) {
+				msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.FAILED);
+				sendToClient(msgToSend, chatOwner);
+				return;
+			}
+
+			userBeingRemoved.removeChat(chatId, chatOwner);
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.SUCCESS, "", chatOwner, chatId);
+			sendToClient(msgToSend, userToRemove);
+			sendToClient(msgToSend, chatOwner);
+
 		} catch(IndexOutOfBoundsException e) {
 			msgToSend = new Message(MainType.CHAT_OPERATION, SubType.REMOVE_USER_FROM_GC, Status.FAILED);
+			sendToClient(msgToSend, userToRemove);
 		}
-		sendToClient(msgToSend, userToRemove);
+		
 	}
 	
 	// SubType.DELETE_GC
@@ -289,10 +374,40 @@ public class Server {
     public void handleAuditSelectUser(Message message, ClientHandler clientHandler) throws IOException {
 		String username = message.getText();
 		String fromUsername = message.getUsername();
+		if(!usernameToUser.containsKey(username) || !(message.getStatus() == Status.REQUEST))
+			return;
 		User user = usernameToUser.get(username);
+		Set<ClientHandler> itUserClients;
+		if(mapUsernameToITClient.containsKey(username))
+			itUserClients = mapUsernameToITClient.get(username);
+		else
+			itUserClients = new HashSet<>();
+		itUserClients.add(clientHandler);
+		mapUsernameToITClient.put(username, itUserClients);
+		if(mapITClientToUsername.containsKey(clientHandler)) {
+			String prevUsername = mapITClientToUsername.get(clientHandler);
+			if(mapUsernameToITClient.containsKey(prevUsername)) {
+				Set<ClientHandler> handlers = mapUsernameToITClient.get(prevUsername);
+				handlers.remove(clientHandler);
+				mapUsernameToITClient.put(prevUsername, handlers);
+			}
+		}
+		mapITClientToUsername.put(clientHandler, username);
 		Message response = new Message(MainType.AUDIT_OPERATION, SubType.SELECT_USER, Status.SUCCESS, username, user);
 		sendToClient(response, fromUsername);
 	}
+
+    public void handleExitAudit(ClientHandler clientHandler) {
+    	if(mapITClientToUsername.containsKey(clientHandler)) {
+    		String prevUsername = mapITClientToUsername.get(clientHandler);
+    		if(mapUsernameToITClient.containsKey(prevUsername)) {
+    			Set<ClientHandler> itUserClients = mapUsernameToITClient.get(prevUsername);
+    			itUserClients.remove(clientHandler);
+    			mapUsernameToITClient.put(prevUsername, itUserClients);
+    		}
+    		mapITClientToUsername.remove(clientHandler);
+    	}
+    }
     
     // SubType.VIEW_CHATS
     public void handleAuditViewChats(Message message, ClientHandler clientHandler) {
@@ -324,6 +439,184 @@ public class Server {
 		
 	}
 
+	public boolean logoutUser(String username) {
+		if(mapUsernameToClient.containsKey(username)) {
+			mapUsernameToClient.remove(username);
+			mapUsernameToITClient.remove(username);
+			return true;
+		}
+		return false;
+	}
+
+	public Message handleITMessageConstruction(Message msg, String username) {
+		Status status = msg.getStatus();
+		if(status == Status.FAILED)
+			return null;
+		MainType main = MainType.AUDIT_OPERATION;
+		SubType sub = msg.getSubType();
+		Message message = null;
+		switch(sub) {
+			case SubType.REMOVE_USER_FROM_GC: 
+				message = new Message(main, sub, Status.SUCCESS, username, msg.getUsername(), msg.getChatId());
+				break;
+			case SubType.ADD_USER_TO_GC: 
+				message = new Message(main, sub, Status.SUCCESS, username, msg.getUsername(), msg.getChatId());
+				break;
+			case SubType.ACTUAL_CHAT: 
+				message = new Message(main, sub, Status.SUCCESS, msg.getChat(), username);
+				break;
+			case SubType.SEND_TEXT_MESSAGE: 
+				message = new Message(main, sub, Status.SUCCESS, msg.getTextMessage(), username, msg.getChatId());
+				break;
+		}
+		return message;
+  }
+	// helper
+	public void printAllUsers() {
+		for(int i = 0; i < users.size(); i++) {
+			System.out.println(users.get(i).getUsername());
+		}
+		
+	}
+
+	public synchronized void save() {
+		System.out.println("Attempting to save");
+		chats.exportChatList(null);
+		for(User user : users) {
+			user.exportUserChatList();
+		}
+		saveUsers();
+	}
+
+	private void saveUsers() {
+		String usersFileContents = "";
+		int index = 0;
+		for(User user : users) {
+			if (index != 0)
+				usersFileContents += '\n';
+			usersFileContents += user.toString();
+			index++;
+		}
+		String localPath = "";
+		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
+			localPath = "../";
+		}
+		File usersDir= new File(localPath + "LocalFiles/Users");
+		usersDir.mkdirs();
+		File usersFile = new File(localPath + "LocalFiles/Users/Users.txt");
+		usersFile.delete();
+		try {
+			usersFile.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(usersFile);
+			writer.write(usersFileContents);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(writer != null) writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private synchronized void load() {
+		String localPath = "";
+		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
+			localPath = "../";
+		}
+		File serverChatIdsDir = new File(localPath + "LocalFiles/Server/ChatIds");
+		if(!serverChatIdsDir.mkdirs()) {
+			File serverChatIdsFile = new File(localPath + "LocalFiles/Server/ChatIds/ChatIds.txt");
+			try {
+				if(!serverChatIdsFile.createNewFile()) {
+					Scanner in = null;
+					try {
+						in = new Scanner(serverChatIdsFile);
+						if(in.hasNextLine()) {
+							String line = in.nextLine();
+							String[] chatIds = line.split(",");
+							for(String chatName : chatIds) {
+								int chatId = Integer.parseInt(chatName);
+								Chat chat = new Chat();
+								boolean loadedProperly = chat.loadFile((localPath + "LocalFiles/Server/Chats/Chat_" + chatId + ".txt"), chatId);
+								if(loadedProperly) {
+									chats.addChat(chat);
+								}
+							}
+						}
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} finally {
+						if (in != null) {
+							in.close();
+						}
+					}
+				}
+			} catch (NumberFormatException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		File serverUsersDir = new File(localPath + "LocalFiles/Users");
+		if(!serverUsersDir.mkdirs()) {
+			File serverUsersFile = new File(localPath + "LocalFiles/Users/Users.txt");
+			try {
+				if(!serverUsersFile.createNewFile()) {
+					Scanner in = null;
+					try {
+						in = new Scanner(serverUsersFile);
+						String line;
+						while(in.hasNextLine()) {
+							line = in.nextLine();
+							try {
+								User user = new User(line);
+								users.add(user);
+								usernameToUser.put(user.getUsername(), user);
+								File chatIds = new File(localPath + "LocalFiles/Users/" + user.getUsername() + "/ChatIds/ChatIds.txt");
+								if(!chatIds.createNewFile()) {
+									Scanner chatIn = null;
+									try {
+										chatIn = new Scanner(chatIds);
+										if(chatIn.hasNextLine()) {
+											String chatline = chatIn.nextLine();
+											String[] stringIds = chatline.split(",");
+											for(String sid : stringIds) {
+												int id = Integer.parseInt(sid);
+												if(chats.containsChat(id)) {
+													chats.insertChatToOneList(user.getChatList(), id);
+												}
+											}
+										}
+									} catch (Exception e){
+										e.printStackTrace();
+									} finally {
+										if(chatIn != null)
+											chatIn.close();
+									}
+								} else {System.out.println("Failed to find chat ids file");}
+							} catch (Exception e) {
+								continue;
+							}
+						}
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} finally {
+						if(in != null)
+							in.close();
+					}
+					
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
 
 

@@ -1,5 +1,6 @@
 package user;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import chat.Chat;
@@ -51,6 +52,7 @@ public class User implements Serializable {
     }
 
     public User(String username, String password, boolean isITUser) {
+    	id = count++;
         this.username = username;
         this.password = password;
         this.online = false;
@@ -61,8 +63,29 @@ public class User implements Serializable {
         this.chatList = new ChatList();
         this.unreadChatList = new ChatList();
     }
-
     
+    public User(String userString) {
+    	String[] userInfo = userString.split(",");
+    	id = Integer.parseInt(userInfo[0]);
+    	if(id > count)
+    		count = id;
+    	switch(userInfo[1]) {
+    		case "IT":
+    			isITUser = true;
+    			break;
+    		default:
+    			isITUser = false;
+    			break;
+    	}
+    	username = userInfo[2];
+    	password = userInfo[3];
+    	this.online = false;
+    	this.auditMode = false;
+    	this.sessionToken = "";
+    	this.lastLogin = null;
+    	this.chatList = new ChatList();
+    	this.unreadChatList = new ChatList();
+    }
     
     public boolean authenticateLogin(String username, String password) {
         if (checkFormat(username) == false|| checkFormat(password) == false) {
@@ -80,7 +103,16 @@ public class User implements Serializable {
         return false;
     }
 
-    
+    public String toString() {
+    	String retStr = "";
+    	retStr += (id + ",");
+    	if(isITUser)
+    		retStr += "IT";
+    	else
+    		retStr += "DEFAULT";
+    	retStr += ("," + username + "," + password);
+    	return retStr;
+    }
     
     
     
@@ -450,4 +482,14 @@ public class User implements Serializable {
 	public Chat getCopyOfChat(int chatId) {
 		return chatList.getCopyOfChat(chatId);
 	}
+
+	public void exportChat(int chatId, boolean fromServer) {
+		chatList.exportChat(chatId, fromServer);
+	}
+
+	public void exportUserChatList() {
+		chatList.exportChatListIds(username);
+	}
+
+	
 }
