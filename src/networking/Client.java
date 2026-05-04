@@ -136,10 +136,14 @@ public class Client {
 	        		    });
 	        			break;
 	        		case SubType.REMOVE_USER_FROM_GC: 
-	        			//add it user logic for updating gc users
+	        			tempUser = selectedAuditUser;
+	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
+	        				break;
+	        			}
+	        			tempUser.addChat(msg.getChat());
+	        			updateChatList(tempUser);
 	        			break;
 	        		case SubType.ADD_USER_TO_GC: 
-	        			//add it user logic for updating gc users
 	        			tempUser = selectedAuditUser;
 	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
 	        				break;
