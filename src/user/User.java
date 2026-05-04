@@ -453,10 +453,10 @@ public class User implements Serializable {
 	}
 
 	public void exportChat(int chatId, boolean fromServer) {
-		try {
-			chatList.exportChat(chatId, fromServer);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		chatList.exportChat(chatId, fromServer);
+	}
+
+	public void exportUserChatList() {
+		chatList.exportChatListIds(username);
 	}
 }

@@ -1,5 +1,7 @@
 package chat;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
@@ -299,11 +301,59 @@ public class ChatList implements Serializable{
 		}
 	}
 
-	public void exportChat(int chatId, boolean fromServer) throws IOException {
+	public void exportChat(int chatId, boolean fromServer) {
 		Chat[] tempChats = chats;
 		int chatIndex = parseId(tempChats, chatId);
 		if(chatIndex == -1)
 			throw new IndexOutOfBoundsException();
-		tempChats[chatIndex].exportChat(fromServer);
+		try {
+			tempChats[chatIndex].exportChat(fromServer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void exportChatListIds(String username) {
+		String folderName;
+		if(username == null)
+			folderName = "Server";
+		else
+			folderName = "Users/" + username;
+		String localPath = "";
+		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
+			localPath = "../";
+		}
+		File chatIdsDir = new File(localPath + "LocalFiles/" + folderName + "/ChatIds");
+		chatIdsDir.mkdirs();
+		File chatsFile = new File(localPath + "LocalFiles/" + folderName + "/ChatIds/ChatIds.txt");
+		chatsFile.delete();
+		try {
+			chatsFile.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(chatsFile);
+			writer.write(this.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(writer != null) writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	public void exportChatList(String username) {
+		exportChatListIds(username);
+		boolean fromServer = false;
+		if (username == null)
+			fromServer = true;
+		int[] tempIds = getChatIds();
+		for(int id : tempIds) {
+			exportChat(id, fromServer);
+		}
 	}
 }
