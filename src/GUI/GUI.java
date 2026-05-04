@@ -59,7 +59,7 @@ public class GUI {
 		 
 		 //set frame size
 		 loginFrame.setSize(450, 700);
-		 loginFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		 loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		 
 		 createLoginForm();
 		 
@@ -79,8 +79,12 @@ public class GUI {
 		 JButton createNewAccountBtn = new JButton("Create Account");
 		 JCheckBox itAccountCheckBox = new JCheckBox("Create as IT account");
 		 
+		 
 		 JLabel welcomeLabel = new JLabel("Welcome", SwingConstants.CENTER);
 		 welcomeLabel.setFont(new Font("Arial", Font.BOLD, 28));
+		 welcomeLabel.setBackground(new Color(0xD3E3E3));
+		 welcomeLabel.setForeground(Color.BLACK);
+		 welcomeLabel.setOpaque(true);
 		 
 		 
 		 submitB.addActionListener(e -> {
@@ -226,10 +230,13 @@ public class GUI {
 		 }else {
 			 JLabel newChatLabel = new JLabel("               Create New Chat" );
 			 newChatLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			 newChatLabel.setOpaque(true); 
-			 newChatLabel.setBackground(new Color(163, 177, 138));
+			 //newChatLabel.setOpaque(true); 
 			 newChatLabel.setPreferredSize(new Dimension(240, 40));
 			 newChatLabel.setMaximumSize(newChatLabel.getPreferredSize());
+			 
+			 newChatLabel.setBackground(new Color(0xD3E3E3));
+			 newChatLabel.setForeground(Color.BLACK);
+			 newChatLabel.setOpaque(true);
 			
 			 newChatLabel.addMouseListener(new MouseAdapter() {
 				 public void mouseClicked(MouseEvent e) {
@@ -260,7 +267,9 @@ public class GUI {
 		 //bottom
 		 JPanel leftBottomPane = new JPanel();
 		 leftBottomPane.setPreferredSize(new Dimension(240, 50));
-		 leftBottomPane.setBackground(new Color(163, 177, 138));
+		 leftBottomPane.setBackground(new Color(0xD3E3E3));
+		 leftBottomPane.setForeground(Color.BLACK);
+		 leftBottomPane.setOpaque(true);
 		 
 		 JPanel textPanel = new JPanel();
 	     textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
@@ -269,14 +278,15 @@ public class GUI {
 	     
 		 JLabel pic = new JLabel();
 	     pic.setPreferredSize(new Dimension(40, 30));
-	     pic.setBackground(new Color(255, 192, 203));
-	     pic.setOpaque(true);
+	     pic.setBackground(new Color(0x548282));
+		 pic.setForeground(Color.BLACK);
+		 pic.setOpaque(true);
 	     
 	     JLabel nameLabel = new JLabel(user.getUsername());	//pass in users name
-	     nameLabel.setForeground(Color.WHITE);
+	     nameLabel.setForeground(Color.BLACK);
 	     nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 14f));
 
-	     JLabel subLabel = new JLabel("view pfp");
+	     JLabel subLabel = new JLabel("view profile");
 	     subLabel.setForeground(Color.GRAY);
 	     subLabel.setFont(subLabel.getFont().deriveFont(12f));
 	     
