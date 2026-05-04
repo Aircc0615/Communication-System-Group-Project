@@ -90,7 +90,8 @@ public class GUI {
 		 submitB.addActionListener(e -> {
 			    String username = usernameField.getText();
 			    String password = new String(passwordField.getPassword());
-			    user = new User(username, password);
+			    boolean isIt = itAccountCheckBox.isSelected();
+			    user = new User(username, password, isIt);
 			    //System.out.println(username + "\n"+ password);
 			    try {
 					login();

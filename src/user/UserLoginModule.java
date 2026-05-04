@@ -35,7 +35,7 @@ public class UserLoginModule {
 		if(usernameToUser.containsKey(username)){
 			return null;
 		}
-		User newUser = new User(user.getUsername(), user.getPassword());
+		User newUser = new User(user.getUsername(), user.getPassword(), user.isInformationTechnologyUser());
 		usernameToUser.put(username, newUser);
 		return newUser;
 	}
