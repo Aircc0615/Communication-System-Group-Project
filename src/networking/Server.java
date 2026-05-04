@@ -40,10 +40,10 @@ public class Server {
     	mapITClientToUsername = new HashMap<ClientHandler, String>();
     	usernameToUser = new HashMap<String, User>();
     	userLoginModule = new UserLoginModule(usernameToUser, users); 
+    	System.out.println(System.getProperty("user.dir"));
     	Server server = new Server();
-    	server.load();
+    	server.load(server);
     	//server.createTestUsers();
-    	server.createSavingThread();
     	server.startServer();
     }
     
@@ -302,12 +302,17 @@ public class Server {
 		
 		try {
 			chats.addChatMember(chatId, userToAdd, chatOwner);
+			System.out.println("Added chat member");
+			User user = usernameToUser.get(userToAdd);
+			chats.insertChatToOneList(user.getChatList(), chatId);
+			System.out.println("Updated added user chatlist");
 			
 			Chat updatedChat = chats.getCopyOfChat(chatId);
 			Message updatedChatForUserUI = new Message(MainType.DISPLAY, SubType.ACTUAL_CHAT, Status.SUCCESS, updatedChat);
 			sendToClient(updatedChatForUserUI, userToAdd);
 			
 		} catch(Exception e) {
+			System.out.println("Failed to add");
 			messageToSend = new Message(MainType.CHAT_OPERATION, SubType.ADD_USER_TO_GC, Status.FAILED);
 			sendToClient(messageToSend, chatOwner);
 		}
@@ -494,7 +499,7 @@ public class Server {
 		}
 		String localPath = "";
 		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
-			localPath = "../";
+			localPath += "../";
 		}
 		File usersDir= new File(localPath + "LocalFiles/Users");
 		usersDir.mkdirs();
@@ -537,7 +542,7 @@ public class Server {
 		System.exit(0);
 	}
 
-	private synchronized void load() {
+	private synchronized void load(Server server) {
 		String localPath = "";
 		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
 			localPath = "../";
@@ -628,6 +633,7 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
+		server.createSavingThread();
 	}
 }
 

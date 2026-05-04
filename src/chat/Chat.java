@@ -59,6 +59,7 @@ public class Chat implements Serializable {
 	public boolean loadFile(String pathToFile, int chatId) {
 		File chatFile = new File(pathToFile);
 		try {
+			if(!chatFile.createNewFile()) {
 			Scanner in = new Scanner(chatFile);
 			String line;
 			int index = 0;
@@ -95,8 +96,13 @@ public class Chat implements Serializable {
 				count = (chatId + 1);
 			in.close();
 			return true;
-		} catch(Exception e) {
+			}
+			System.out.println("File Does not exist");
 			return false;
+		} catch(Exception e) {
+			System.out.println("File Does not exist");
+			return false;
+		} finally {
 		}
 	}
 
@@ -331,7 +337,7 @@ public class Chat implements Serializable {
 			folderName = "IT_Export";
 		String localPath = "";
 		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
-			localPath = "../";
+			localPath += "../";
 		}
 		File chatDir = new File(localPath + "LocalFiles/" + folderName + "/Chats");
 		chatDir.mkdirs();

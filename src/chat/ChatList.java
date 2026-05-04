@@ -31,8 +31,11 @@ public class ChatList implements Serializable{
 			int chatId = chat.getChatId();
 			Chat[] tempChats = getCopyOfChats();
 			int chatIndex = parseId(tempChats, chatId);
-			if(chatIndex != -1)
+			if(chatIndex != -1) {
+				System.out.println("Already contains chat");
 				return;
+			}
+			System.out.println("Doesn't contain chat");
 			// makes more space if needed (2x)
 			if (numChats >= tempChats.length) {
 				Chat[] newChats = new Chat[tempChats.length * 2];

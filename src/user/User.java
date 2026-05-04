@@ -67,8 +67,8 @@ public class User implements Serializable {
     public User(String userString) {
     	String[] userInfo = userString.split(",");
     	id = Integer.parseInt(userInfo[0]);
-    	if(id > count)
-    		count = id;
+    	if(count <= id)
+    		count = (id + 1);
     	switch(userInfo[1]) {
     		case "IT":
     			isITUser = true;
