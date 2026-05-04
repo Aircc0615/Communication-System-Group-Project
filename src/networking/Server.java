@@ -122,7 +122,7 @@ public class Server {
     }
 
     public void sendToClients(Message message, String[] usernames) throws IOException {
-    	Message itMessage = handleITMessageConstruction(message);
+    	Message itMessage = null;
     	for(String username : usernames) {
     		if(mapUsernameToClient.containsKey(username)) {
     			ClientHandler client = mapUsernameToClient.get(username);
@@ -131,18 +131,19 @@ public class Server {
     			//add unread buffer logic here
     		}
     		if(mapUsernameToITClient.containsKey(username)) {
+    			itMessage = handleITMessageConstruction(message, username);
     			if(itMessage == null)
     				continue;
     			Set<ClientHandler> clients = mapUsernameToITClient.get(username);
     			for(ClientHandler client : clients) {
-    				client.sendToClient(message);
+    				client.sendToClient(itMessage);
     			}
     		}
     	}
     }
 
     public void sendToClient(Message message, String username) throws IOException {
-    	Message itMessage = handleITMessageConstruction(message);
+    	Message itMessage = handleITMessageConstruction(message, username);
     	if(mapUsernameToClient.containsKey(username)) {
     		ClientHandler client = mapUsernameToClient.get(username);
     		client.sendToClient(message);
@@ -154,7 +155,7 @@ public class Server {
     			return;
     		Set<ClientHandler> clients = mapUsernameToITClient.get(username);
     		for(ClientHandler client : clients) {
-    			client.sendToClient(message);
+    			client.sendToClient(itMessage);
     		}
     	}
     }
@@ -368,7 +369,7 @@ public class Server {
 		return false;
 	}
 
-	public Message handleITMessageConstruction(Message msg) {
+	public Message handleITMessageConstruction(Message msg, String username) {
 		Status status = msg.getStatus();
 		if(status == Status.FAILED)
 			return null;
@@ -377,16 +378,16 @@ public class Server {
 		Message message = null;
 		switch(sub) {
 			case SubType.REMOVE_USER_FROM_GC: 
-				message = new Message(main, sub, Status.SUCCESS, msg.getText(), msg.getUsername(), msg.getChatId());
+				message = new Message(main, sub, Status.SUCCESS, username, msg.getUsername(), msg.getChatId());
 				break;
 			case SubType.ADD_USER_TO_GC: 
-				message = new Message(main, sub, Status.SUCCESS, msg.getText(), msg.getUsername(), msg.getChatId());
+				message = new Message(main, sub, Status.SUCCESS, username, msg.getUsername(), msg.getChatId());
 				break;
 			case SubType.ACTUAL_CHAT: 
-				message = new Message(main, sub, Status.SUCCESS, msg.getChat());
+				message = new Message(main, sub, Status.SUCCESS, msg.getChat(), username);
 				break;
 			case SubType.SEND_TEXT_MESSAGE: 
-				message = new Message(main, sub, Status.SUCCESS, msg.getTextMessage(), msg.getChatId());
+				message = new Message(main, sub, Status.SUCCESS, msg.getTextMessage(), username, msg.getChatId());
 				break;
 		}
 		return message;

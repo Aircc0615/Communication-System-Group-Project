@@ -121,17 +121,17 @@ public class Client {
 	            	}
 	            }
 	        } else if (msg.mainType == MainType.AUDIT_OPERATION) {
+	        	User tempUser;
 	        	switch (msg.getSubType()) {
 	        		case SubType.SELECT_USER:
 	        			if(msg.getStatus() != Status.SUCCESS)
 	        				break;
-	        			selectedAuditUser = msg.getUser();
-	        			if (selectedAuditUser == null) {
-	        		        System.out.println("Selected audit user is null");
+	        			tempUser = msg.getUser();
+	        			if (tempUser == null) {
 	        		        break;
 	        		    }
-
-	        		    selectedAuditUser.addChatThreadSafety();
+	        		    tempUser.addChatThreadSafety();
+	        				selectedAuditUser = tempUser;
 
 	        		    SwingUtilities.invokeLater(() -> {
 	        		        gui.setNewAuditUser(selectedAuditUser);
@@ -145,12 +145,19 @@ public class Client {
 	        			//add it user logic for updating gc users
 	        			break;
 	        		case SubType.ACTUAL_CHAT: 
-	        			selectedAuditUser.addChat(msg.getChat());
-	        			updateChatList(selectedAuditUser);
+	        			tempUser = selectedAuditUser;
+	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
+	        				break;
+	        			}
+	        			tempUser.addChat(msg.getChat());
+	        			updateChatList(tempUser);
 	        			break;
 	        		case SubType.SEND_TEXT_MESSAGE: 
-	            	selectedAuditUser.addMessageToChat(msg.getChatId(), msg.getTextMessage());
-	            	updateChatList(selectedAuditUser);
+	        			tempUser = selectedAuditUser;
+	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0)
+	        				break;
+	            	tempUser.addMessageToChat(msg.getChatId(), msg.getTextMessage());
+	            	updateChatList(tempUser);
 	        			break;
 	        	}
 	        } else { 
@@ -321,9 +328,9 @@ public class Client {
 		sendToServer(exportLogRequest);
 	}
 	
-	private void updateChatList(User user) {
-     user.addChatThreadSafety();
-     gui.reloadChatList(user);
+	private void updateChatList(User inputUser) {
+     inputUser.addChatThreadSafety();
+     SwingUtilities.invokeLater(() -> gui.reloadChatList(inputUser));
 	}
 
 	public User getUser() {

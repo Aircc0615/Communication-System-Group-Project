@@ -583,8 +583,10 @@ public class GUI {
 	}
 	 
 	 public void reloadChatList(User user) {
-		 if(this.user != user)
+		 if(this.user != user) {
+			 System.out.println("User is not active gui user");
 			 return;
+		 }
 		 if(chatListPanel == null) {
 		 		chatListPanel = new JPanel();
 		 		chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
@@ -637,6 +639,7 @@ public class GUI {
 	 public void setNewAuditUser(User user) {
 		 if(user != null) {
 			 this.user = user;
+			 System.out.println("Auditing user: " + user.getUsername());
 			 mainFrame.dispose();
 			 createMainFrame();
 		 }

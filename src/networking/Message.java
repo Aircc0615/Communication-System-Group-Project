@@ -62,6 +62,14 @@ public class Message implements Serializable { //serialize takes the object and 
       this.chat = chat;
     }
   
+    public Message(MainType mainType, SubType subType, Status status, Chat chat, String username) {
+      id = count++;
+      this.mainType = mainType;
+    	this.subType = subType;
+    	this.status = status;
+      this.chat = chat;
+      this.username = username;
+    }
   
     public Message(MainType mainType, SubType subType, Status status, String text, String username) {
     	id = count++;
@@ -97,6 +105,16 @@ public class Message implements Serializable { //serialize takes the object and 
         this.status = status;
         this.textMessage = textMessage;
         this.chatId = chatId;
+    }
+
+    public Message(MainType mainType, SubType subType, Status status, TextMessage textMessage, String username, int chatId) {
+    		id = count++;
+        this.mainType = mainType;
+        this.subType = subType;
+        this.status = status;
+        this.textMessage = textMessage;
+        this.chatId = chatId;
+        this.username = username;
     }
 
     public Message(MainType mainType, SubType subType, Status status) {
