@@ -274,8 +274,9 @@ public class Chat implements Serializable {
 		else
 			folderName = "IT_Export";
 		String localPath = "";
-		if(System.getProperty("user.dir").matches("bin$"))
+		if(System.getProperty("user.dir").trim().contains("Communication-System-Group-Project/bin")) {
 			localPath = "../";
+		}
 		File exportDir = new File(localPath + "LocalFiles");
 		exportDir.mkdir();
 		File folderNameDir = new File(localPath + "LocalFiles/" + folderName);

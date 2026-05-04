@@ -60,7 +60,6 @@ public class Client {
     // Client Side Server Operations
 	// Allows Client to connect to server and returns the socket 
 	public Socket connectToServer() throws UnknownHostException, IOException {
-				System.out.println("Working Dir: " + System.getProperty("user.dir"));
         int port = 7777;
         String host = "localhost"; //need to update to actual host
 
