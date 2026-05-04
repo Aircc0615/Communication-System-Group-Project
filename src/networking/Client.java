@@ -114,8 +114,6 @@ public class Client {
 	            	} else if (msg.status == Status.SUCCESS){
 	            		user.addMessageToChat(msg.getChatId(), msg.getTextMessage());
 	            		updateChatList(user);
-	            		//Put logic here to update gui view of chat/chatlist
-	            		//gui.updatechatlist(msg.getChatId()) <- will update the chat as well
 	            	}
 	            }
 	        } 
@@ -142,6 +140,12 @@ public class Client {
 	        			break;
 	        		case SubType.ADD_USER_TO_GC: 
 	        			//add it user logic for updating gc users
+	        			tempUser = selectedAuditUser;
+	        			if(tempUser.getUsername().compareTo(msg.getUsername()) != 0) {
+	        				break;
+	        			}
+	        			tempUser.removeChat(msg.getChatId(), msg.getUsername());
+	        			updateChatList(tempUser);
 	        			break;
 	        		case SubType.ACTUAL_CHAT: 
 	        			tempUser = selectedAuditUser;
@@ -163,7 +167,8 @@ public class Client {
         	else if(msg.mainType == MainType.CHAT_OPERATION) {
         		switch (msg.getSubType()) {
 	        		case SubType.ADD_USER_TO_GC:
-	        			
+	        			user.addChat(msg.getChat());
+	        			updateChatList(user);
 	        			break;
 	        		case SubType.REMOVE_USER_FROM_GC:
 	        			user.removeChat(msg.getChatId(), msg.getUsername());
