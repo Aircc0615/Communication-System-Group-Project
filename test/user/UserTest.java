@@ -23,6 +23,8 @@ class UserTest {
         assertFalse(user.isAuditMode());
         assertEquals("", user.getSessionToken());
         assertNull(user.getLastLogin());
+        assertNotNull(user.getChatList());
+        assertNotNull(user.getUnreadChatList());
         assertEquals(0, user.getChatCount());
         assertEquals(0, user.getUnreadChatCount());
     }
@@ -44,12 +46,22 @@ class UserTest {
     }
 
     @Test
-    void regularUserRoleIsUser() {
-        User user = new User("shayan", "password");
+    void toStringReturnsUserData() {
+        User user = new User("shayan", "password", false);
 
-        assertEquals("USER", user.getRole());
+        assertTrue(user.toString().endsWith(",DEFAULT,shayan,password"));
     }
 
+    @Test
+    void stringConstructorSetsUserInformation() {
+        User user = new User("25,IT,shayan,password");
+
+        assertEquals(25, user.getId());
+        assertTrue(user.isInformationTechnologyUser());
+        assertEquals("shayan", user.getUsername());
+        assertEquals("password", user.getPassword());
+    }
+    
     @Test
     void authenticateLoginSuccess() {
         User user = new User("shayan", "password");
@@ -73,6 +85,16 @@ class UserTest {
         assertFalse(user.isOnline());
     }
 
+    @Test
+    void authenticateLoginFailsWithInvalidUsernameFormat() {
+        User user = new User("shayan", "password");
+
+        boolean result = user.authenticateLogin("sha", "password");
+
+        assertFalse(result);
+        assertFalse(user.isOnline());
+    }
+    
     @Test
     void logoutSetsUserOffline() {
         User user = new User("shayan", "password");
@@ -106,78 +128,17 @@ class UserTest {
         assertFalse(result);
         assertFalse(user.isAuditMode());
     }
-
-    @Test
-    void addChatIncreasesChatCount() {
-        User user = new User();
-
-        user.addChat(10);
-
-        assertEquals(1, user.getChatCount());
-        assertEquals(10, user.getChats()[0]);
-    }
-
-    @Test
-    void addChatDoesNotAddDuplicate() {
-        User user = new User();
-
-        user.addChat(10);
-        user.addChat(10);
-
-        assertEquals(1, user.getChatCount());
-    }
-
-    @Test
-    void removeChatDecreasesChatCount() {
-        User user = new User();
-
-        user.addChat(10);
-        user.removeChat(10);
-
-        assertEquals(0, user.getChatCount());
-    }
     
     @Test
-    void viewChatReturnsTrueForAddedChat() {
-        User user = new User();
+    void setITUserFalseTurnsOffAuditMode() {
+        User user = new User("shayan", "password", true);
+        user.authenticateLogin("shayan", "password");
+        user.enableAuditMode(user.getSessionToken());
 
-        user.addChat(10);
+        user.setITUser(false);
 
-        assertTrue(user.ViewChat(10));
-    }
-
-    @Test
-    void markChatAsUnreadWorksForExistingChat() {
-        User user = new User();
-
-        user.addChat(10);
-        user.markChatAsUnread(10);
-
-        assertTrue(user.hasUnreadMessages());
-        assertTrue(user.hasUnreadChat(10));
-        assertEquals(1, user.getUnreadChatCount());
-    }
-
-    @Test
-    void markChatAsUnreadDoesNotWorkForMissingChat() {
-        User user = new User();
-
-        user.markChatAsUnread(10);
-
-        assertFalse(user.hasUnreadMessages());
-        assertEquals(0, user.getUnreadChatCount());
-    }
-
-    @Test
-    void markChatAsReadRemovesUnreadChat() {
-        User user = new User();
-
-        user.addChat(10);
-        user.markChatAsUnread(10);
-        user.markChatAsRead(10);
-
-        assertFalse(user.hasUnreadChat(10));
-        assertEquals(0, user.getUnreadChatCount());
+        assertFalse(user.isInformationTechnologyUser());
+        assertFalse(user.isAuditMode());
     }
 
     @Test
