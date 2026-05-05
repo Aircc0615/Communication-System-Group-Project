@@ -43,7 +43,8 @@ public class Server {
     	System.out.println(System.getProperty("user.dir"));
     	Server server = new Server();
     	server.load(server);
-    	//server.createTestUsers();
+    	if(users.isEmpty())
+    		server.createTestUsers();
     	server.startServer();
     }
     
@@ -91,7 +92,7 @@ public class Server {
     public void startServer() {
     	ServerSocket serverSocket = null;
         try {
-            serverSocket = new ServerSocket(7777);
+            serverSocket = new ServerSocket(59091);
             createGUI(serverSocket);
             System.out.println("Server is now awaiting a new connection");
 

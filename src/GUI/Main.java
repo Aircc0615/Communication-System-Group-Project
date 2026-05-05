@@ -13,7 +13,7 @@ import user.User;
 public class Main {
 
 	public static void main(String[] args) throws UnknownHostException, IOException {
-		Client client1 = new Client();
+		Client client1 = new Client(args);
 		GUI userGUI1 = new GUI(client1);
 		
 		

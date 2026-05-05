@@ -1,6 +1,7 @@
 package networking;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +26,24 @@ public class Client {
 	private User selectedAuditUser;
 	private GUI gui;
 	private Thread serverListener;
+	private String host;
 	
+		public Client(String[] args) {
+			if(args.length == 1) {
+				host = args[0];
+			} else {
+				host = "localhost";
+			}
+		}
+		
+		public Client() {
+			host = "localhost";
+		}
 	
 		public void assignGUI(GUI gui) {
 			this.gui = gui;
 		}
+
 	
     /*public static void main(String[] args) throws IOException, ClassNotFoundException {    	
     	clientSideSocket = connectToServer();
@@ -60,8 +74,7 @@ public class Client {
     // Client Side Server Operations
 	// Allows Client to connect to server and returns the socket 
 	public Socket connectToServer() throws UnknownHostException, IOException {
-        int port = 7777;
-        String host = "localhost"; //need to update to actual host
+        int port = 59091;
 
         clientSideSocket = new Socket(host, port); //create a client side socket that connects to server with the host and port specified
         System.out.println("Connected to: " + clientSideSocket.getInetAddress().getHostAddress());
@@ -218,10 +231,20 @@ public class Client {
         
         Message loginRequestMessage = new Message(MainType.AUTHENTICATION, SubType.LOGIN, Status.REQUEST, user.getUsername() + "requesting login", user); //login message created
         updateMessageHistory(loginRequestMessage); //add the login message to the message history
-        sendToServer(loginRequestMessage); //sending the login message to server
+        try {
+        	sendToServer(loginRequestMessage); //sending the login message to server
+        } catch (EOFException  | SocketException e) {
+        	gui.forceExit();
+        }
         
-        
-        Message incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
+        Message incomingLoginResponse = null;
+        try {
+        incomingLoginResponse = (Message) objectInputStream.readObject(); //deSerialized the message
+        } catch (EOFException  | SocketException e) {
+        	gui.forceExit();
+        }
+        if(incomingLoginResponse == null)
+        	return null;
         updateMessageHistory(incomingLoginResponse);
 
         if(incomingLoginResponse.mainType == MainType.SERVER && incomingLoginResponse.subType == SubType.EXIT) {
