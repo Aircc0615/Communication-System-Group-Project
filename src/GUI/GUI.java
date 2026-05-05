@@ -91,7 +91,6 @@ public class GUI {
 			    String password = new String(passwordField.getPassword());
 			    boolean isIt = itAccountCheckBox.isSelected();
 			    user = new User(username, password, isIt);
-			    //System.out.println(username + "\n"+ password);
 			    try {
 					login();
 					
@@ -123,8 +122,7 @@ public class GUI {
 					e1.printStackTrace();
 				}
 			});
-		 
-		 //layout
+	
 		 JPanel formPanel = new JPanel();
 	     formPanel.setLayout(new GridLayout(5, 1, 0, 1));
 	     formPanel.add(welcomeLabel);
@@ -139,8 +137,6 @@ public class GUI {
 	     buttonPanel.add(createNewAccountBtn);
 	     buttonPanel.add(itAccountCheckBox);
 	     
-	     
-	     //combine login
 	     JPanel mainPanel = new JPanel(new BorderLayout(0, 10));
 	     mainPanel.add(formPanel, BorderLayout.CENTER);
 	     mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -149,7 +145,6 @@ public class GUI {
 	     JPanel centerPanel = new JPanel(new GridBagLayout());
 	     centerPanel.add(mainPanel);
 	     
-	     //loginFrame.add(topPanel, BorderLayout.NORTH);
 	     loginFrame.add(centerPanel, BorderLayout.CENTER);
 		 
 	 }
@@ -174,13 +169,10 @@ public class GUI {
 			 }
 		 });
 		 
-		 //mainFrame.setLocationRelativeTo(null);
 		 mainFrame.setResizable(false);
-		 
 		 createLeftMainPanel();
 		 createRightMainPanel();
 		 mainFrame.setVisible(true);
-		 
 		 mainFrame.revalidate();
 		 mainFrame.repaint();
 		 
@@ -192,7 +184,6 @@ public class GUI {
 		 leftPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		
 		 //top
-		 
 		 JPanel addChatPanel = new JPanel();
 		 addChatPanel.setPreferredSize(new Dimension(240, 50));
 		 addChatPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -230,7 +221,6 @@ public class GUI {
 		 }else {
 			 JLabel newChatLabel = new JLabel("               Create New Chat" );
 			 newChatLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			 //newChatLabel.setOpaque(true); 
 			 newChatLabel.setPreferredSize(new Dimension(240, 40));
 			 newChatLabel.setMaximumSize(newChatLabel.getPreferredSize());
 			 
@@ -243,7 +233,6 @@ public class GUI {
 					 try {
 						createNewChatOption().show(addChatPanel, e.getX(), e.getY());
 					 } catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					 }
 				    }
@@ -258,7 +247,6 @@ public class GUI {
 		 optionScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));	
 		 optionScrollPane.setPreferredSize(new Dimension(240, 530));
 		 
-		 //display chatList
 		 reloadChatList(user);
 		 
 		 optionScrollPane.setViewportView(chatListPanel);
@@ -307,7 +295,6 @@ public class GUI {
 		 leftPanel.add(leftBottomPane);
 		 
 		 
-		 //adding to main frame
 		 mainFrame.add(leftPanel, BorderLayout.WEST);
 	 }
 	 
@@ -384,9 +371,6 @@ public class GUI {
 		 
 		 panel1 = new JPanel();
 		 panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
-		 //panel1.setBorder(BorderFactory.createTitledBorder("Panel1"));
-         
-		 
 		 
 		 msgScrollPane.setViewportView(panel1);
 		 
@@ -493,12 +477,10 @@ public class GUI {
 	
 	 private JPopupMenu createProfileMenu() {
 		JPopupMenu profile = new JPopupMenu();
-		//JMenuItem myProfile = new JMenuItem("My Profile"); //add if have time
 	    JMenuItem audit = new JMenuItem("Audit Mode");
 	    JMenuItem exitAudit = new JMenuItem("Exit Audit Mode");
 	    JMenuItem logout = new JMenuItem("Logout");
 	    
-		//myProfile.addActionListener(e -> openProfilePage());
 		audit.addActionListener(e -> {
 			auditMode = true;
 			mainFrame.dispose();
@@ -523,7 +505,6 @@ public class GUI {
 		
 		});
 		
-		//profile.add(myProfile);
 			if(auditMode == true) {
 	    		profile.add(exitAudit);
 	    		profile.addSeparator();
@@ -543,7 +524,6 @@ public class GUI {
 		 JMenuItem CreateChat = new JMenuItem("Create new chat!");
 		 
 		 CreateChat.addActionListener(e -> {
-			 //input popup that allows user to input who to send to
 			 String usernames = JOptionPane.showInputDialog(mainFrame, "Enter usernames serparated by commas: "); //whatever the user inputs needs to be stored here
 			 if(usernames != null) {
 				 try {
@@ -570,8 +550,6 @@ public class GUI {
 
 		    addUserItem.setVisible(isCreator);
 		    removeUserItem.setVisible(isCreator);
-		   
-		    
 		}
 	 
 	 private boolean isCurrentUserCreator(int chatId) {
@@ -585,7 +563,6 @@ public class GUI {
 		    if (chat == null) {
 		        return false;
 		    }
-
 		    return chat.getCreatorUsername().equals(user.getUsername());
 	}
 	 
@@ -599,7 +576,6 @@ public class GUI {
 		 		chatListPanel.setLayout(new BoxLayout(chatListPanel, BoxLayout.Y_AXIS));
 		 }
 		 chatListPanel.removeAll();
-		 //chatListPanel.setBorder(BorderFactory.createTitledBorder("right Panel"));
 		 
 		 int[] chatIds = user.getChatIds();
 		 int groupNumber = 1;
@@ -673,8 +649,6 @@ public class GUI {
 		 else {
 			 JOptionPane.showMessageDialog(loginFrame, "Login failed! Invalid username/password, or the User is already online!");
 		 }
-
-		 
 	 }
 
 	 public void setNewAuditUser(User user) {
@@ -723,12 +697,6 @@ public class GUI {
 		 client.getUserState();
 	 }
 	 
-	
-	 // user will pass usernames, server takes care of converting single string to array
-	 // example argument for function: John, Henry, Kevin, Kayla, Jennifer, Michael
-	 // user can also pass single name, example: John
-	 // server takes care of constructing group chat or private chat
-	 
 	 // MESSAGE: MainType.CHAT_OPERATIONs
 	 // CREATE_GC 	||       this will work for making either a DM or GC	 
 	 private void handleCreateChat(String usernames) throws IOException {
@@ -749,12 +717,6 @@ public class GUI {
 	 private void deleteGroupChat(String chatID) throws IOException { //the GUI needs to handle retrieve the chatID
 		 client.DeleteChat(chatID);
 	 }
-		
-	// MESSAGE: MainType.AUDIT_OPERATION
-	// SubType.ENTER_AUDIT_MODE
-	 /*private void enterAuditMode() throws IOException {
-		 client.enterAuditMode();
-	 }*/
 	 
 	 // SubType.SELECT_USER
 	 private void audit_SelectUser(String username) throws IOException{
