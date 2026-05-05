@@ -32,10 +32,8 @@ public class ChatList implements Serializable{
 			Chat[] tempChats = getCopyOfChats();
 			int chatIndex = parseId(tempChats, chatId);
 			if(chatIndex != -1) {
-				System.out.println("Already contains chat");
 				return;
 			}
-			System.out.println("Doesn't contain chat");
 			// makes more space if needed (2x)
 			if (numChats >= tempChats.length) {
 				Chat[] newChats = new Chat[tempChats.length * 2];
@@ -310,7 +308,6 @@ public class ChatList implements Serializable{
 		for(Chat chat : tempChats) {
 			if(chat != null) {
 				chat.addThreadSafety();
-				System.out.println("Adding thread safety to chat: " + chat.getChatId());
 			}
 		}
 	}

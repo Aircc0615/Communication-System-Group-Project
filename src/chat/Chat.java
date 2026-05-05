@@ -97,10 +97,8 @@ public class Chat implements Serializable {
 			in.close();
 			return true;
 			}
-			System.out.println("File Does not exist");
 			return false;
 		} catch(Exception e) {
-			System.out.println("File Does not exist");
 			return false;
 		} finally {
 		}
@@ -216,19 +214,16 @@ public class Chat implements Serializable {
 	public void removeMember(String username) {
 		synchronized (mutexObject) {
 			if (username == creatorUsername) {
-				System.out.println("creator");
 				throw new IllegalArgumentException();
 			}
 			int indexInArray = 0;
 			while (indexInArray < numMembers) { // attempts to find the member
 				if (memberUsernames[indexInArray].compareTo(username) == 0) {
-					System.out.println("found");
 					break;
 				}
 				indexInArray++;
 			}
 			if (indexInArray == numMembers) {
-				System.out.println("not found");
 				return; // return if not found
 			}
 			// shift array down if found
