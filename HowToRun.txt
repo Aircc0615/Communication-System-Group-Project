@@ -1,5 +1,5 @@
 SERVER:
-The server can be run just by running the file in eclipse with no arguments
+The server can be run just by running the Server.java source file in eclipse with no arguments
 The first run of the server will create 6 test users with no chats each with the username and password of "1" through "6"
 Changes will save to the server, so any message sending will update the file structure server side
 Changes to the server data files will not update the server while it is running
@@ -7,6 +7,7 @@ Server chat files will be saved to "LocalFiles/Server"
 Server user files will be saved to "LocalFiles/Users"
 
 CLIENT:
+The client is ran through the Main.java source file in eclipse
 The client by default uses "localhost" as the ip, however it does accept an ip as an argument
 The ip will only be accepted if it is the only argument
 Exported files will be saved to "LocalFiles/IT_Export/Chats"
