@@ -74,7 +74,7 @@ public class Client {
     // Client Side Server Operations
 	// Allows Client to connect to server and returns the socket 
 	public Socket connectToServer() throws UnknownHostException, IOException {
-        int port = 59091;
+        int port = 59090;
 
         clientSideSocket = new Socket(host, port); //create a client side socket that connects to server with the host and port specified
         System.out.println("Connected to: " + clientSideSocket.getInetAddress().getHostAddress());

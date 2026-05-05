@@ -91,7 +91,7 @@ public class Server {
     public void startServer() {
     	ServerSocket serverSocket = null;
         try {
-            serverSocket = new ServerSocket(59091);
+            serverSocket = new ServerSocket(59090);
             createGUI(serverSocket);
             System.out.println("Server is now awaiting a new connection");
 
